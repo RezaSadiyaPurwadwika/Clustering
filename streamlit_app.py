@@ -8,61 +8,48 @@ if "page" not in st.session_state:
     st.session_state.page = "home"
 
 # =========================
-# CSS untuk Navbar dan Tombol
+# CSS dan Navbar
 # =========================
 st.markdown("""
-<style>
-    .navbar {
-        background-color: #003366;
-        padding: 1.2rem 2rem;
-        color: white;
-        border-radius: 0 0 10px 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .navbar-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-    }
-    .navbar-buttons {
-        display: flex;
-        gap: 1rem;
-    }
-    .navbar-buttons button {
-        background-color: white;
-        color: #003366;
-        border: 2px solid #003366;
-        padding: 0.4rem 1.2rem;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .navbar-buttons button:hover {
-        background-color: #003366;
-        color: white;
-    }
-</style>
-
-<div class="navbar">
-    <div class="navbar-title">🌐 Ensemble Rock Clustering</div>
-    <div class="navbar-buttons">
-        <form action="" method="post">
-            <button name="page" value="home">Home</button>
-            <button name="page" value="about">About</button>
-            <button name="page" value="rules">Rules</button>
-        </form>
-    </div>
-</div>
+    <style>
+        .navbar {
+            background-color: #003366;
+            padding: 1.2rem 2rem;
+            color: white;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# Tangkap Event dari Tombol HTML
-# =========================
-if st.query_params.get("page"):
-    st.session_state.page = st.query_params["page"][0]
+# Navbar dengan Streamlit button
+with st.container():
+    st.markdown('<div class="navbar">', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([4, 1, 2])
+    with col1:
+        st.markdown('<div class="navbar-title">🌐 Ensemble Rock Clustering</div>', unsafe_allow_html=True)
+    with col2:
+        if st.button("Home"):
+            st.session_state.page = "home"
+    with col3:
+        cols = st.columns(2)
+        if cols[0].button("About"):
+            st.session_state.page = "about"
+        if cols[1].button("Rules"):
+            st.session_state.page = "rules"
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
 # Konten Halaman
