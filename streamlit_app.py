@@ -63,7 +63,7 @@ page = st.session_state.page
 st.markdown(f"""
 <div class="navbar">
     <a href="/?page=home" class="nav-item {'active' if page == 'home' else ''}">🏠 Home</a>
-    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📘 About</a>
+    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📒 About</a>
     <a href="/?page=rules" class="nav-item {'active' if page == 'rules' else ''}">📜 Rules</a>
 </div>
 """, unsafe_allow_html=True)
@@ -72,7 +72,7 @@ st.markdown(f"""
 if page == "home":
     st.markdown("""
     <div class="hero">
-        <h1>Better Solutions for Your Clustering</h1>
+        <h1>Ensemble Clustering Using Links (ROCK)</h1>
         <p>Please read the About & Rules menu first.</p>
     </div>
     """, unsafe_allow_html=True)
