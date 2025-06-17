@@ -63,7 +63,7 @@ page = st.session_state.page
 st.markdown(f"""
 <div class="navbar">
     <a href="/?page=home" class="nav-item {'active' if page == 'home' else ''}">🏠 Home</a>
-    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📒 About</a>
+    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📋 About</a>
     <a href="/?page=rules" class="nav-item {'active' if page == 'rules' else ''}">📜 Rules</a>
 </div>
 """, unsafe_allow_html=True)
@@ -84,8 +84,9 @@ if page == "home":
         st.dataframe(df)
 
 elif page == "about":
-    st.subheader("📘 About")
-    st.markdown("Aplikasi ini digunakan untuk clustering data UMKM...")
+    st.subheader("📋 About")
+    st.markdown("Aplikasi ini dirancang untuk mengelompokkan UMKM berdasarkan karakteristik usaha seperti jenis, modal, omset, dan tenaga kerja.
+Dengan metode Agglomerative Hierarchical Clustering dan Robust Clustering using Links (Ensemble ROCK), aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.")
 
 elif page == "rules":
     st.subheader("📜 Rules")
