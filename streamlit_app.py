@@ -4,24 +4,27 @@ import pandas as pd
 # Konfigurasi halaman
 st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
 
-# ==============================
-# State Awal untuk Navigasi
-# ==============================
+# ==========================
+# Navigasi State
+# ==========================
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ==============================
+# ==========================
 # Fungsi Navigasi
-# ==============================
+# ==========================
 def go_home():
     st.session_state.page = "home"
 
 def go_about():
     st.session_state.page = "about"
 
-# ==============================
-# CSS dan Navbar HTML
-# ==============================
+def go_rules():
+    st.session_state.page = "rules"
+
+# ==========================
+# CSS dan Navbar
+# ==========================
 st.markdown("""
 <style>
     .navbar {
@@ -55,20 +58,25 @@ st.markdown("""
         margin-right: auto;
     }
 </style>
+""", unsafe_allow_html=True)
 
-<!-- Navbar -->
+# ==========================
+# Navbar
+# ==========================
+st.markdown("""
 <div class="navbar">
     <div><strong>🌐 Ensemble Rock Clustering</strong></div>
     <div>
-        <a onClick="window.location.reload()">Home</a>
-        <a href="#" onclick="window.parent.postMessage('about','*')">About</a>
+        <a href="#" onclick="window.location.reload()">Home</a>
+        <a href="#" onclick="window.location.search='?page=about'">About</a>
+        <a href="#" onclick="window.location.search='?page=rules'">Rules</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ==============================
+# ==========================
 # Komponen Halaman
-# ==============================
+# ==========================
 def show_home():
     st.markdown("""
         <div class="hero">
@@ -89,26 +97,46 @@ def show_home():
 
 def show_about():
     st.markdown("""
-        <div style='padding: 3rem 2rem; background-color: #f0f2f6; border-radius: 10px;'>
-            <h2>About This App</h2>
-            <p>
-                This application is designed to assist in clustering analysis using the Ensemble ROCK method.
-                It allows you to upload CSV data, preprocess, and explore advanced clustering capabilities.
-            </p>
-            <ul>
-                <li>Built with Streamlit</li>
-                <li>Supports CSV uploads up to 200MB</li>
-                <li>Optimized for mixed data types</li>
-            </ul>
-            <button onclick="window.location.reload()">🔙 Back to Home</button>
-        </div>
-        """, unsafe_allow_html=True)
+    <div style='padding: 3rem 2rem; background-color: #f0f2f6; border-radius: 10px;'>
+        <h2>About This App</h2>
+        <p>
+            This application helps cluster MSMEs based on characteristics such as business type, capital, revenue, and workforce.
+            Using <strong>Agglomerative Hierarchical Clustering</strong> and <strong>Robust Clustering using Links (Ensemble ROCK)</strong>,
+            it supports the government in formulating targeted policies to help MSMEs thrive and prosper.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# ==============================
-# Tampilan Berdasarkan State
-# ==============================
+
+def show_rules():
+    st.markdown("""
+    <div style='padding: 3rem 2rem; background-color: #f8f9fa; border-radius: 10px;'>
+        <h2>⚠️ Important Guidelines</h2>
+        <ul>
+            <li>Upload files in <strong>.csv</strong> format (max 200MB).</li>
+            <li>Ensure the following columns exist:
+                <ul>
+                    <li><code>modal</code>, <code>omset</code>, <code>tenaga_kerja</code>: whole numbers (no dots or commas).</li>
+                    <li><code>ojol</code>: values must be <strong>Ya</strong> or <strong>Tidak</strong>.</li>
+                    <li><code>jenis</code>: values must be <strong>mamin</strong> or <strong>oleh</strong>.</li>
+                </ul>
+            </li>
+            <li>Clean and format your data properly before uploading.</li>
+            <li>It is recommended to read the <strong>About</strong> page before uploading your data.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ==========================
+# Routing Berdasarkan Query
+# ==========================
 query_params = st.query_params
-if "about" in query_params:
+page = query_params.get("page", ["home"])[0]
+
+if page == "about":
     show_about()
+elif page == "rules":
+    show_rules()
 else:
     show_home()
