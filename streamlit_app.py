@@ -3,53 +3,35 @@ import pandas as pd
 
 st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
 
-# Inisialisasi halaman
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+# Navigasi menggunakan radio
+page = st.radio(
+    label="Navigation",
+    options=["Home", "About", "Rules"],
+    horizontal=True,
+    label_visibility="collapsed"  # Sembunyikan label
+)
 
-# =========================
-# CSS dan Navbar
-# =========================
+# CSS untuk Navbar
 st.markdown("""
     <style>
-        .navbar {
+        .stRadio > div {
             background-color: #003366;
-            padding: 1.2rem 2rem;
-            color: white;
+            padding: 1rem 2rem;
             border-radius: 0 0 10px 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: center;
+            gap: 2rem;
         }
-        .navbar-title {
-            font-size: 1.5rem;
+        .stRadio div label {
+            color: white;
             font-weight: bold;
-            display: flex;
-            align-items: center;
+            font-size: 1.1rem;
         }
-        .navbar-buttons {
-            display: flex;
-            gap: 1rem;
+        .stRadio div label:hover {
+            color: #87CEFA;
         }
     </style>
 """, unsafe_allow_html=True)
-
-# Navbar dengan Streamlit button
-with st.container():
-    st.markdown('<div class="navbar">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([4, 1, 2])
-    with col1:
-        st.markdown('<div class="navbar-title">🌐 Ensemble Rock Clustering</div>', unsafe_allow_html=True)
-    with col2:
-        if st.button("Home"):
-            st.session_state.page = "home"
-    with col3:
-        cols = st.columns(2)
-        if cols[0].button("About"):
-            st.session_state.page = "about"
-        if cols[1].button("Rules"):
-            st.session_state.page = "rules"
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
 # Konten Halaman
@@ -99,11 +81,11 @@ def show_rules():
     """, unsafe_allow_html=True)
 
 # =========================
-# Tampilkan Halaman Aktif
+# Tampilkan Halaman Sesuai Navigasi
 # =========================
-if st.session_state.page == "home":
+if page == "Home":
     show_home()
-elif st.session_state.page == "about":
+elif page == "About":
     show_about()
-elif st.session_state.page == "rules":
+elif page == "Rules":
     show_rules()
