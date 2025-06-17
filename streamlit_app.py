@@ -1,16 +1,17 @@
 import streamlit as st
 import pandas as pd
 
-# ===== Page Config =====
-st.set_page_config(page_title="Arsha Style Clustering", layout="wide")
+# ========== Konfigurasi Halaman ==========
+st.set_page_config(page_title="ArshaClust Landing", layout="wide")
 
-# ===== Simulasi Navbar =====
+# ========== Custom CSS & Layout ==========
 st.markdown(
     """
     <style>
+        /* Navbar style */
         .navbar {
-            background-color: #0d6efd;
-            padding: 1rem;
+            background-color: #007bff;
+            padding: 1rem 2rem;
             color: white;
             display: flex;
             justify-content: space-between;
@@ -25,45 +26,49 @@ st.markdown(
         .navbar a:hover {
             text-decoration: underline;
         }
+
+        /* Hero section */
         .hero {
-            padding: 4rem 2rem;
+            padding: 6rem 2rem 4rem;
             background-color: #37517e;
             color: white;
             text-align: center;
         }
+
+        /* Upload box center */
         .upload-box {
+            text-align: center;
             margin-top: 2rem;
-            padding: 2rem;
-            background-color: #f8f9fa;
-            border-radius: 10px;
         }
     </style>
+
+    <!-- Navbar -->
     <div class="navbar">
         <div><strong>ARSHACLUST</strong></div>
         <div>
             <a href="#">Home</a>
             <a href="#">About</a>
-            <a href="#">Services</a>
-            <a href="#">Contact</a>
         </div>
     </div>
+
+    <!-- Hero Section -->
     <div class="hero">
-        <h1>Better Solutions for Your Clustering</h1>
+        <h1><strong>Better Solutions for Your Clustering</strong></h1>
         <p>Upload your data and get started with powerful clustering tools</p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# ===== Upload Section =====
+# ========== Upload File Section ==========
 with st.container():
     st.markdown('<div class="upload-box">', unsafe_allow_html=True)
     st.subheader("📂 Upload Your CSV File")
-    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
-    
+    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], label_visibility="collapsed")
+
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        st.write("### Preview Data")
+        st.write("### Preview of Uploaded Data")
         st.dataframe(df)
     
     st.markdown('</div>', unsafe_allow_html=True)
