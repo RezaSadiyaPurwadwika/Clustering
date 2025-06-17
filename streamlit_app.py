@@ -1,114 +1,61 @@
 import streamlit as st
-import pandas as pd
 
-# Konfigurasi halaman
-st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
+# Simulasikan navigasi dengan query_params
+query_params = st.query_params
+page = query_params.get("page", ["home"])[0]
 
-# ==============================
-# State Awal untuk Navigasi
-# ==============================
-if "page" not in st.session_state:
-    st.session_state.page = "home"
-
-# ==============================
-# Fungsi Navigasi
-# ==============================
-def go_home():
-    st.session_state.page = "home"
-
-def go_about():
-    st.session_state.page = "about"
-
-# ==============================
-# CSS dan Navbar HTML
-# ==============================
+# Header / Navbar
 st.markdown("""
-<style>
-    .navbar {
-        background-color: #37517e;
-        padding: 1rem 2rem;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .navbar a {
-        color: white;
-        margin-left: 2rem;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .navbar a:hover {
-        text-decoration: underline;
-    }
-    .hero {
-        padding: 4rem 2rem 2rem;
-        background-color: #87CEFA;
-        color: #003366;
-        text-align: center;
-    }
-    .file-upload-clean {
-        margin-top: 2rem;
-        width: 50%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-</style>
-
-<!-- Navbar -->
-<div class="navbar">
-    <div><strong>🌐 Ensemble Rock Clustering</strong></div>
-    <div>
-        <a onClick="window.location.reload()">Home</a>
-        <a href="#" onclick="window.parent.postMessage('about','*')">About</a>
+    <style>
+        .nav-container {
+            background-color: #34496d;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ccc;
+        }
+        .nav-title {
+            font-weight: bold;
+            font-size: 22px;
+            color: white;
+        }
+        .nav-links a {
+            margin-left: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            color: white;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+            color: #aad3f7;
+        }
+    </style>
+    <div class="nav-container">
+        <div class="nav-title">🌐 Ensemble Rock Clustering</div>
+        <div class="nav-links">
+            <a href="/?page=home">Home</a>
+            <a href="/?page=about">About</a>
+            <a href="/?page=rules">Rules</a>
+        </div>
     </div>
-</div>
 """, unsafe_allow_html=True)
 
-# ==============================
-# Komponen Halaman
-# ==============================
-def show_home():
-    st.markdown("""
-        <div class="hero">
-            <h1><strong>Better Solutions for Your Clustering</strong></h1>
-            <p>Upload your data and get started with powerful clustering tools</p>
-            <div class="file-upload-clean">
-        """, unsafe_allow_html=True)
+# === Tampilan Berdasarkan Menu Dipilih ===
+if page == "home":
+    st.title("Better Solutions for Your Clustering")
+    st.write("Upload your data and get started with powerful clustering tools.")
+    uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
-    uploaded_file = st.file_uploader("", type=["csv"])
+elif page == "about":
+    st.header("About")
+    st.write("Aplikasi ini dibuat untuk mempermudah proses clustering data UMKM dengan pendekatan Ensemble ROCK...")
 
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write("### Preview of Uploaded Data")
-        st.dataframe(df)
-
-    st.markdown("</div></div>", unsafe_allow_html=True)
-
-
-def show_about():
-    st.markdown("""
-        <div style='padding: 3rem 2rem; background-color: #f0f2f6; border-radius: 10px;'>
-            <h2>About This App</h2>
-            <p>
-                This application is designed to assist in clustering analysis using the Ensemble ROCK method.
-                It allows you to upload CSV data, preprocess, and explore advanced clustering capabilities.
-            </p>
-            <ul>
-                <li>Built with Streamlit</li>
-                <li>Supports CSV uploads up to 200MB</li>
-                <li>Optimized for mixed data types</li>
-            </ul>
-            <button onclick="window.location.reload()">🔙 Back to Home</button>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ==============================
-# Tampilan Berdasarkan State
-# ==============================
-query_params = st.query_params
-if "about" in query_params:
-    show_about()
-else:
-    show_home()
+elif page == "rules":
+    st.header("Rules")
+    st.write("""
+    **Beberapa aturan penggunaan aplikasi ini:**
+    1. File yang diunggah harus format `.csv`.
+    2. Maksimal ukuran file 200MB.
+    3. Pastikan kolom-kolom telah sesuai format yang diharapkan.
+    """)
