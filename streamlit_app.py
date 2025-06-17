@@ -82,12 +82,29 @@ if page == "home":
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.success("✅ File berhasil diunggah!")
+
+        # Membersihkan nama kolom agar seragam
+        df.columns = df.columns.str.strip().str.lower()
+
+        # Tampilkan kolom yang terbaca
+        st.markdown("**Kolom yang terdeteksi di CSV:**")
+        st.write(df.columns.tolist())
         st.dataframe(df)
 
-        # Tampilkan tombol
+        # Cek kolom penting
+        expected_columns = ['omset', 'tenaga_kerja', 'modal']
+        missing = [col for col in expected_columns if col not in df.columns]
+
+        if missing:
+            st.error(f"❌ Kolom berikut tidak ditemukan di file: {', '.join(missing)}")
+            st.stop()
+
+        # Tampilkan tombol di luar blok proses berat
         run_preprocessing = st.button("🔧 Jalankan Preprocessing")
 
         if run_preprocessing:
+            # Mulai PREPROCESSING
+
             # Mulai PREPROCESSING
             df['jenis'] = df['jenis'].str.strip().str.lower()
             df['ojol'] = df['ojol'].str.strip().str.lower()
