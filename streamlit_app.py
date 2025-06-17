@@ -104,58 +104,39 @@ if run_preprocessing:
         if 'ojol' in df.columns:
             df['ojol'] = df['ojol'].astype(str).str.strip().str.lower()
 
-        # Distribusi kategori
-        if 'jenis' in df.columns or 'ojol' in df.columns:
-            st.subheader("✅ Distribusi Kategori")
-            col1, col2 = st.columns(2)
+        st.subheader("✅ Distribusi Kategori")
+        col1, col2 = st.columns(2)
 
-            if 'jenis' in df.columns:
-                with col1:
-                    st.caption("Distribusi 'jenis'")
-                    fig1, ax1 = plt.subplots(figsize=(3.2, 2.5))
-                    sns.countplot(data=df, x='jenis', ax=ax1)
-                    ax1.set_title("Jenis", fontsize=10)
-                    ax1.tick_params(axis='x', labelsize=8)
-                    ax1.tick_params(axis='y', labelsize=8)
-                    st.pyplot(fig1)
+        if 'jenis' in df.columns:
+            with col1:
+                st.caption("Distribusi 'jenis'")
+                fig1, ax1 = plt.subplots(figsize=(3, 2))
+                sns.countplot(data=df, x='jenis', ax=ax1)
+                ax1.set_title("Jenis", fontsize=10)
+                st.pyplot(fig1)
 
-            if 'ojol' in df.columns:
-                with col2:
-                    st.caption("Distribusi 'ojol'")
-                    fig2, ax2 = plt.subplots(figsize=(3.2, 2.5))
-                    sns.countplot(data=df, x='ojol', ax=ax2)
-                    ax2.set_title("Ojol", fontsize=10)
-                    ax2.tick_params(axis='x', labelsize=8)
-                    ax2.tick_params(axis='y', labelsize=8)
-                    st.pyplot(fig2)
+        if 'ojol' in df.columns:
+            with col2:
+                st.caption("Distribusi 'ojol'")
+                fig2, ax2 = plt.subplots(figsize=(3, 2))
+                sns.countplot(data=df, x='ojol', ax=ax2)
+                ax2.set_title("Ojol", fontsize=10)
+                st.pyplot(fig2)
 
-        # Info dataset
-        st.subheader("ℹ️ Info Dataset")
-        buffer = io.StringIO()
-        df.info(buf=buffer)
-        st.text(buffer.getvalue())
-
-        st.subheader("📊 Statistik Deskriptif (Numerik)")
+        st.subheader("📊 Statistik Deskriptif")
         num_cols = [col for col in ['omset', 'tenaga_kerja', 'modal'] if col in df.columns]
+
         if not num_cols:
-            st.error("❌ Kolom numerik tidak ditemukan: 'omset', 'tenaga_kerja', atau 'modal'")
+            st.error("❌ Kolom numerik tidak ditemukan.")
         else:
             st.dataframe(df[num_cols].describe())
 
-            st.subheader("🔍 Missing Values")
-            st.dataframe(df[num_cols].isnull().sum())
-
-            # Boxplot Sebelum dan Sesudah
-            st.subheader("📦 Boxplot Sebelum & Sesudah Penanganan Outlier")
             col3, col4 = st.columns(2)
-
             with col3:
-                st.caption("Sebelum")
-                fig3, ax3 = plt.subplots(figsize=(3.2, 2.5))
+                st.caption("📦 Sebelum Outlier")
+                fig3, ax3 = plt.subplots(figsize=(3, 2))
                 sns.boxplot(data=df[num_cols], ax=ax3)
-                ax3.set_title("Sebelum", fontsize=10)
-                ax3.tick_params(axis='x', labelsize=8)
-                ax3.tick_params(axis='y', labelsize=8)
+                ax3.set_title("Sebelum")
                 st.pyplot(fig3)
 
             for col in ['omset', 'modal']:
@@ -168,21 +149,20 @@ if run_preprocessing:
                     df[col] = df[col].clip(lower=lower, upper=upper)
 
             with col4:
-                st.caption("Sesudah")
-                fig4, ax4 = plt.subplots(figsize=(3.2, 2.5))
+                st.caption("📦 Setelah Outlier")
+                fig4, ax4 = plt.subplots(figsize=(3, 2))
                 sns.boxplot(data=df[num_cols], ax=ax4)
-                ax4.set_title("Sesudah", fontsize=10)
-                ax4.tick_params(axis='x', labelsize=8)
-                ax4.tick_params(axis='y', labelsize=8)
+                ax4.set_title("Sesudah")
                 st.pyplot(fig4)
 
-            # Normalisasi
-            st.subheader("📈 Data Setelah Normalisasi Z-Score")
+            st.subheader("📈 Normalisasi Z-Score")
             df_zscore = df.copy()
             df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
+            st.dataframe(df_zscore[num_cols].head())
 
     except Exception as e:
-        st.error(f"🚨 Terjadi error saat preprocessing: {e}")
+        st.error(f"🚨 Error saat preprocessing: {e}")
+
 
 # =====================
 # ABOUT PAGE
