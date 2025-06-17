@@ -35,11 +35,9 @@ st.markdown(
             text-align: center;
         }
 
-        .upload-area {
+        /* Hapus kotak hitam */
+        .file-upload-clean {
             margin-top: 2rem;
-            background-color: #2c3e50;
-            padding: 2rem;
-            border-radius: 10px;
             width: 50%;
             margin-left: auto;
             margin-right: auto;
@@ -63,12 +61,12 @@ st.markdown(
     <div class="hero">
         <h1><strong>Better Solutions for Your Clustering</strong></h1>
         <p>Upload your data and get started with powerful clustering tools</p>
-        <div class="upload-area">
+        <div class="file-upload-clean">
     """,
     unsafe_allow_html=True
 )
 
-# ========== Upload File di Dalam Kotak Biru ==========
+# ========== Upload File ==========
 uploaded_file = st.file_uploader("", type=["csv"])
 
 if uploaded_file:
@@ -76,10 +74,10 @@ if uploaded_file:
     st.write("### Preview of Uploaded Data")
     st.dataframe(df)
 
-# ========== Tutup DIV Upload Area & Hero ==========
+# ========== Tutup Div ==========
 st.markdown(
     """
-        </div> <!-- end upload-area -->
+        </div> <!-- end upload clean -->
     </div> <!-- end hero -->
     """,
     unsafe_allow_html=True
