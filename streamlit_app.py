@@ -3,11 +3,16 @@ import pandas as pd
 
 st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Session state untuk halaman aktif
+# Session state default
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# CSS untuk Navbar dan Hero Section
+# Ambil parameter dari URL dengan cara baru
+query_params = st.query_params
+if "page" in query_params:
+    st.session_state.page = query_params["page"]
+
+# CSS Navbar dan Hero
 st.markdown("""
     <style>
     .navbar {
@@ -54,7 +59,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Navbar HTML
+# HTML Navbar
 page = st.session_state.page
 st.markdown(f"""
 <div class="navbar">
@@ -64,13 +69,8 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Ambil parameter dari URL
-query_params = st.experimental_get_query_params()
-if "page" in query_params:
-    st.session_state.page = query_params["page"][0]
-
 # Konten halaman
-if st.session_state.page == "home":
+if page == "home":
     st.markdown("""
     <div class="hero">
         <h1>Better Solutions for Your Clustering</h1>
@@ -84,10 +84,11 @@ if st.session_state.page == "home":
         df = pd.read_csv(uploaded_file)
         st.dataframe(df)
 
-elif st.session_state.page == "about":
+elif page == "about":
     st.subheader("📘 About")
     st.markdown("Aplikasi ini digunakan untuk clustering data UMKM...")
 
-elif st.session_state.page == "rules":
+elif page == "rules":
     st.subheader("📜 Rules")
     st.markdown("Silakan upload data yang sesuai format, tidak ada missing values, dan variabel kategorikal jelas...")
+
