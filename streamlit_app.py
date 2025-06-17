@@ -1,86 +1,75 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Ensemble ROCK Clustering", layout="wide")
+st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Simpan state halaman
+# Session state untuk halaman aktif
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# Gaya CSS khusus
+# CSS untuk Navbar dan Hero Section
 st.markdown("""
     <style>
-    /* Navbar container */
-    .nav-container {
+    .navbar {
         background-color: #003366;
-        padding: 20px;
-        border-radius: 0 0 20px 20px;
+        padding: 1rem;
+        border-radius: 0 0 15px 15px;
         display: flex;
         justify-content: center;
-        gap: 60px;
+        gap: 40px;
     }
-
-    /* Tautan menu */
-    .nav-link {
+    .nav-item {
         color: white;
-        text-decoration: none;
         font-weight: bold;
-        font-size: 20px;
-        padding: 10px 20px;
+        font-size: 18px;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
         border-radius: 10px;
-        transition: background-color 0.3s ease;
+        transition: 0.3s;
     }
-
-    /* Saat hover */
-    .nav-link:hover {
-        background-color: #87CEFA;
-        color: #003366;
+    .nav-item:hover {
+        background-color: #1E90FF;
+        color: #fff;
     }
-
-    /* Aktif */
     .active {
         background-color: red;
-        color: white;
     }
 
-    /* Judul bagian */
     .hero {
-        background-color: #87CEFA;
-        padding: 50px;
+        background-color: #E0F0FF;
         text-align: center;
+        padding: 2rem;
         border-radius: 10px;
         margin-top: 20px;
     }
-
     .hero h1 {
-        font-size: 42px;
-        font-weight: bold;
         color: #003366;
+        font-size: 36px;
+        margin-bottom: 0.5rem;
     }
-
     .hero p {
-        font-size: 18px;
         color: #003366;
+        font-size: 18px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Navbar
+# Navbar HTML
 page = st.session_state.page
 st.markdown(f"""
-<div class="nav-container">
-    <a href="?page=home" class="nav-link {'active' if page == 'home' else ''}">🏠 Home</a>
-    <a href="?page=about" class="nav-link {'active' if page == 'about' else ''}">📘 About</a>
-    <a href="?page=rules" class="nav-link {'active' if page == 'rules' else ''}">📜 Rules</a>
+<div class="navbar">
+    <a href="/?page=home" class="nav-item {'active' if page == 'home' else ''}">🏠 Home</a>
+    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📘 About</a>
+    <a href="/?page=rules" class="nav-item {'active' if page == 'rules' else ''}">📜 Rules</a>
 </div>
 """, unsafe_allow_html=True)
 
-# Baca URL param
+# Ambil parameter dari URL
 query_params = st.experimental_get_query_params()
 if "page" in query_params:
     st.session_state.page = query_params["page"][0]
 
-# Konten per halaman
+# Konten halaman
 if st.session_state.page == "home":
     st.markdown("""
     <div class="hero">
@@ -89,16 +78,16 @@ if st.session_state.page == "home":
     </div>
     """, unsafe_allow_html=True)
 
-    st.subheader("Upload your CSV data")
-    uploaded_file = st.file_uploader("Upload file", type="csv")
+    st.subheader("📤 Upload Your CSV File")
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.dataframe(df)
 
 elif st.session_state.page == "about":
-    st.subheader("📘 About This App")
-    st.markdown("Aplikasi ini dirancang untuk membantu proses clustering data UMKM dengan metode Ensemble ROCK...")
+    st.subheader("📘 About")
+    st.markdown("Aplikasi ini digunakan untuk clustering data UMKM...")
 
 elif st.session_state.page == "rules":
     st.subheader("📜 Rules")
-    st.markdown("Silakan upload file CSV dengan format yang sesuai. Data harus mencakup kolom kategori dan numerik...")
+    st.markdown("Silakan upload data yang sesuai format, tidak ada missing values, dan variabel kategorikal jelas...")
