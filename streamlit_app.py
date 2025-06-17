@@ -84,8 +84,11 @@ if page == "home":
         st.dataframe(df)
 
 elif page == "about":
-    st.subheader("📋 About")
-    st.markdown("Aplikasi ini dirancang untuk mengelompokkan UMKM berdasarkan karakteristik usaha seperti jenis, modal, omset, dan tenaga kerja. Dengan metode Agglomerative Hierarchical Clustering dan Robust Clustering using Links (Ensemble ROCK), aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.")
+    st.subheader("🧩 Tentang Aplikasi")
+    st.markdown("""
+    Aplikasi ini dirancang untuk mengelompokkan UMKM berdasarkan karakteristik usaha seperti jenis, modal, omset, dan tenaga kerja.  
+    Dengan metode **Agglomerative Hierarchical Clustering** dan **Robust Clustering using Links (Ensemble ROCK)**, aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.
+    """)
 
 elif page == "rules":
     st.subheader("📜 Rules")
