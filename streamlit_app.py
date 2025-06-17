@@ -3,17 +3,18 @@ import pandas as pd
 
 st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
 
-# Navigasi menggunakan radio
+# === Navigasi radio button ===
 page = st.radio(
     label="Navigation",
     options=["Home", "About", "Rules"],
     horizontal=True,
-    label_visibility="collapsed"  # Sembunyikan label
+    label_visibility="collapsed",
 )
 
-# CSS untuk Navbar
+# === CSS Kustom untuk radio ===
 st.markdown("""
     <style>
+        /* Container radio */
         .stRadio > div {
             background-color: #003366;
             padding: 1rem 2rem;
@@ -22,20 +23,27 @@ st.markdown("""
             justify-content: center;
             gap: 2rem;
         }
-        .stRadio div label {
-            color: white;
+
+        /* Label radio (semua opsi) */
+        .stRadio label {
+            color: white !important;
             font-weight: bold;
             font-size: 1.1rem;
+            background-color: transparent !important;
+            padding: 0.3rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
         }
-        .stRadio div label:hover {
-            color: #87CEFA;
+
+        /* Label yang aktif (dipilih) */
+        .stRadio div[data-baseweb="radio"] > div > div > label[data-selected="true"] {
+            background-color: #87CEFA !important;
+            color: #003366 !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# Konten Halaman
-# =========================
+# === Fungsi Halaman ===
 def show_home():
     st.markdown("""
         <div style='padding: 4rem 2rem; background-color: #87CEFA; color: #003366; text-align: center; border-radius: 10px'>
@@ -80,9 +88,7 @@ def show_rules():
     </div>
     """, unsafe_allow_html=True)
 
-# =========================
-# Tampilkan Halaman Sesuai Navigasi
-# =========================
+# === Halaman sesuai navigasi ===
 if page == "Home":
     show_home()
 elif page == "About":
