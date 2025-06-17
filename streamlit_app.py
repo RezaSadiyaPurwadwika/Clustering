@@ -3,20 +3,18 @@ import pandas as pd
 
 st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Session state default
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# Ambil parameter dari URL dengan cara baru
 query_params = st.query_params
 if "page" in query_params:
     st.session_state.page = query_params["page"]
 
-# CSS Navbar dan Hero
+# Styling CSS
 st.markdown("""
     <style>
     .navbar {
-        background-color: #003366;
+        background-color: #002B5B;
         padding: 1rem;
         border-radius: 0 0 15px 15px;
         display: flex;
@@ -24,24 +22,25 @@ st.markdown("""
         gap: 40px;
     }
     .nav-item {
-        color: white;
+        color: #ADD8E6; /* baby blue */
         font-weight: bold;
         font-size: 18px;
         text-decoration: none;
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
-        transition: 0.3s;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        transition: all 0.3s ease-in-out;
     }
     .nav-item:hover {
         background-color: #1E90FF;
-        color: #fff;
+        color: white !important;
     }
     .active {
-        background-color: red;
+        background-color: #87CEFA; /* light sky blue */
+        color: #002B5B !important;
     }
 
     .hero {
-        background-color: #E0F0FF;
+        background-color: #E6F2FF;
         text-align: center;
         padding: 2rem;
         border-radius: 10px;
@@ -59,7 +58,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# HTML Navbar
+# Tampilkan navbar
 page = st.session_state.page
 st.markdown(f"""
 <div class="navbar">
@@ -91,4 +90,3 @@ elif page == "about":
 elif page == "rules":
     st.subheader("📜 Rules")
     st.markdown("Silakan upload data yang sesuai format, tidak ada missing values, dan variabel kategorikal jelas...")
-
