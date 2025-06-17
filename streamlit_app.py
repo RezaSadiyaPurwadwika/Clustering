@@ -22,7 +22,7 @@ st.markdown("""
         gap: 40px;
     }
     .nav-item {
-        color: #ADD8E6; /* baby blue */
+        color: #ADD8E6;
         font-weight: bold;
         font-size: 18px;
         text-decoration: none;
@@ -35,10 +35,9 @@ st.markdown("""
         color: white !important;
     }
     .active {
-        background-color: #87CEFA; /* light sky blue */
+        background-color: #87CEFA;
         color: #002B5B !important;
     }
-
     .hero {
         background-color: #E6F2FF;
         text-align: center;
@@ -79,77 +78,75 @@ if page == "home":
 
     st.subheader("📂 Upload Your CSV File")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+
     if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    st.success("✅ File berhasil diunggah!")
-    st.dataframe(df)
+        df = pd.read_csv(uploaded_file)
+        st.success("✅ File berhasil diunggah!")
+        st.dataframe(df)
 
-    # Tampilkan tombol di luar blok proses berat
-    run_preprocessing = st.button("🔧 Jalankan Preprocessing")
+        # Tampilkan tombol
+        run_preprocessing = st.button("🔧 Jalankan Preprocessing")
 
-    if run_preprocessing:
-        # Mulai PREPROCESSING
-        df['jenis'] = df['jenis'].str.strip().str.lower()
-        df['ojol'] = df['ojol'].str.strip().str.lower()
+        if run_preprocessing:
+            # Mulai PREPROCESSING
+            df['jenis'] = df['jenis'].str.strip().str.lower()
+            df['ojol'] = df['ojol'].str.strip().str.lower()
 
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-        import io
+            import seaborn as sns
+            import matplotlib.pyplot as plt
+            import io
 
-        st.subheader("✅ Distribusi Kategori 'jenis'")
-        fig1, ax1 = plt.subplots()
-        sns.countplot(data=df, x='jenis', ax=ax1)
-        ax1.set_title("Distribusi Kategori: jenis")
-        st.pyplot(fig1)
+            st.subheader("✅ Distribusi Kategori 'jenis'")
+            fig1, ax1 = plt.subplots()
+            sns.countplot(data=df, x='jenis', ax=ax1)
+            ax1.set_title("Distribusi Kategori: jenis")
+            st.pyplot(fig1)
 
-        st.subheader("✅ Distribusi Kategori 'ojol'")
-        fig2, ax2 = plt.subplots()
-        sns.countplot(data=df, x='ojol', ax=ax2)
-        ax2.set_title("Distribusi Kategori: ojol")
-        st.pyplot(fig2)
+            st.subheader("✅ Distribusi Kategori 'ojol'")
+            fig2, ax2 = plt.subplots()
+            sns.countplot(data=df, x='ojol', ax=ax2)
+            ax2.set_title("Distribusi Kategori: ojol")
+            st.pyplot(fig2)
 
-        st.subheader("ℹ️ Info Dataset")
-        buffer = io.StringIO()
-        df.info(buf=buffer)
-        st.text(buffer.getvalue())
+            st.subheader("ℹ️ Info Dataset")
+            buffer = io.StringIO()
+            df.info(buf=buffer)
+            st.text(buffer.getvalue())
 
-        st.subheader("📊 Statistik Deskriptif (Numerik)")
-        st.dataframe(df[['omset', 'tenaga_kerja', 'modal']].describe())
+            st.subheader("📊 Statistik Deskriptif (Numerik)")
+            st.dataframe(df[['omset', 'tenaga_kerja', 'modal']].describe())
 
-        st.subheader("🔍 Missing Values")
-        st.dataframe(df.isnull().sum())
+            st.subheader("🔍 Missing Values")
+            st.dataframe(df.isnull().sum())
 
-        # Boxplot sebelum outlier handling
-        st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
-        fig3, ax3 = plt.subplots(figsize=(10, 6))
-        sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax3)
-        ax3.set_title('Boxplot Kolom Omset, Tenaga Kerja, dan Modal')
-        st.pyplot(fig3)
+            st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
+            fig3, ax3 = plt.subplots(figsize=(10, 6))
+            sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax3)
+            ax3.set_title('Boxplot Kolom Omset, Tenaga Kerja, dan Modal')
+            st.pyplot(fig3)
 
-        # Outlier handling
-        for col in ['omset', 'modal']:
-            Q1 = df[col].quantile(0.25)
-            Q3 = df[col].quantile(0.75)
-            IQR = Q3 - Q1
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-            df[col] = df[col].clip(lower=lower_bound, upper=upper_bound)
+            # Outlier handling
+            for col in ['omset', 'modal']:
+                Q1 = df[col].quantile(0.25)
+                Q3 = df[col].quantile(0.75)
+                IQR = Q3 - Q1
+                lower_bound = Q1 - 1.5 * IQR
+                upper_bound = Q3 + 1.5 * IQR
+                df[col] = df[col].clip(lower=lower_bound, upper=upper_bound)
 
-        # Boxplot setelah outlier handling
-        st.subheader("📦 Boxplot Setelah Penanganan Outlier")
-        fig4, ax4 = plt.subplots(figsize=(10, 6))
-        sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax4)
-        ax4.set_title('Boxplot Setelah Penanganan Outlier')
-        st.pyplot(fig4)
+            st.subheader("📦 Boxplot Setelah Penanganan Outlier")
+            fig4, ax4 = plt.subplots(figsize=(10, 6))
+            sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax4)
+            ax4.set_title('Boxplot Setelah Penanganan Outlier')
+            st.pyplot(fig4)
 
-        # Normalisasi Z-Score
-        from scipy.stats import zscore
-        df_zscore = df.copy()
-        cols_to_normalize = ['omset', 'tenaga_kerja', 'modal']
-        df_zscore[cols_to_normalize] = df_zscore[cols_to_normalize].apply(zscore)
+            from scipy.stats import zscore
+            df_zscore = df.copy()
+            cols_to_normalize = ['omset', 'tenaga_kerja', 'modal']
+            df_zscore[cols_to_normalize] = df_zscore[cols_to_normalize].apply(zscore)
 
-        st.subheader("📈 Data Setelah Normalisasi Z-Score")
-        st.dataframe(df_zscore[cols_to_normalize].head())
+            st.subheader("📈 Data Setelah Normalisasi Z-Score")
+            st.dataframe(df_zscore[cols_to_normalize].head())
 
 elif page == "about":
     st.subheader("📋 Tentang Aplikasi")
@@ -160,7 +157,6 @@ elif page == "about":
 
 elif page == "rules":
     st.subheader("📜 Hal yang Perlu Diperhatikan")
-
     st.markdown("""
     File yang diunggah harus berformat **`.csv`** dan maksimal **200MB**.
 
@@ -169,4 +165,3 @@ elif page == "rules":
     - `ojol`: isi dengan **"Ya"** atau **"Tidak"**.
     - `jenis`: isi dengan **"mamin"** (makanan/minuman) atau **"oleh"** (oleh-oleh).
     """)
-
