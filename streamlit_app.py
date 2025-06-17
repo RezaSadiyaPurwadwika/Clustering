@@ -73,7 +73,7 @@ def show_home():
     st.markdown("""
         <div class="hero">
             <h1><strong>Better Solutions for Your Clustering</strong></h1>
-            <p>Upload your data and get started with powerful clustering tools</p>
+            <p>before uploading your data, it is recommended to read the information in the About menu first</p>
             <div class="file-upload-clean">
         """, unsafe_allow_html=True)
 
