@@ -105,62 +105,75 @@ if page == "home":
                     df['ojol'] = df['ojol'].astype(str).str.strip().str.lower()
 
                 # Distribusi kategori
-                if 'jenis' in df.columns:
-                    st.subheader("✅ Distribusi Kategori 'jenis'")
-                    fig1, ax1 = plt.subplots()
-                    sns.countplot(data=df, x='jenis', ax=ax1)
-                    ax1.set_title("Distribusi Kategori: jenis")
-                    st.pyplot(fig1)
+if 'jenis' in df.columns or 'ojol' in df.columns:
+    st.subheader("✅ Distribusi Kategori")
+    col1, col2 = st.columns(2)
 
-                if 'ojol' in df.columns:
-                    st.subheader("✅ Distribusi Kategori 'ojol'")
-                    fig2, ax2 = plt.subplots()
-                    sns.countplot(data=df, x='ojol', ax=ax2)
-                    ax2.set_title("Distribusi Kategori: ojol")
-                    st.pyplot(fig2)
+    if 'jenis' in df.columns:
+        with col1:
+            st.caption("Distribusi 'jenis'")
+            fig1, ax1 = plt.subplots(figsize=(4, 3))
+            sns.countplot(data=df, x='jenis', ax=ax1)
+            ax1.set_xlabel("")
+            ax1.set_ylabel("")
+            st.pyplot(fig1)
 
-                st.subheader("ℹ️ Info Dataset")
-                buffer = io.StringIO()
-                df.info(buf=buffer)
-                st.text(buffer.getvalue())
+    if 'ojol' in df.columns:
+        with col2:
+            st.caption("Distribusi 'ojol'")
+            fig2, ax2 = plt.subplots(figsize=(4, 3))
+            sns.countplot(data=df, x='ojol', ax=ax2)
+            ax2.set_xlabel("")
+            ax2.set_ylabel("")
+            st.pyplot(fig2)
 
-                st.subheader("📊 Statistik Deskriptif (Numerik)")
-                num_cols = [col for col in ['omset', 'tenaga_kerja', 'modal'] if col in df.columns]
-                if not num_cols:
-                    st.error("❌ Kolom numerik tidak ditemukan: 'omset', 'tenaga_kerja', atau 'modal'")
-                else:
-                    st.dataframe(df[num_cols].describe())
+st.subheader("ℹ️ Info Dataset")
+buffer = io.StringIO()
+df.info(buf=buffer)
+st.text(buffer.getvalue())
 
-                    st.subheader("🔍 Missing Values")
-                    st.dataframe(df[num_cols].isnull().sum())
+st.subheader("📊 Statistik Deskriptif (Numerik)")
+num_cols = [col for col in ['omset', 'tenaga_kerja', 'modal'] if col in df.columns]
+if not num_cols:
+    st.error("❌ Kolom numerik tidak ditemukan: 'omset', 'tenaga_kerja', atau 'modal'")
+else:
+    st.dataframe(df[num_cols].describe())
 
-                    st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
-                    fig3, ax3 = plt.subplots(figsize=(6, 4))
-                    sns.boxplot(data=df[num_cols], ax=ax3)
-                    ax3.set_title('Boxplot Sebelum Outlier Handling')
-                    st.pyplot(fig3)
+    st.subheader("🔍 Missing Values")
+    st.dataframe(df[num_cols].isnull().sum())
 
-                    # Tangani outlier untuk 'omset' dan 'modal' jika ada
-                    for col in ['omset', 'modal']:
-                        if col in df.columns:
-                            Q1 = df[col].quantile(0.25)
-                            Q3 = df[col].quantile(0.75)
-                            IQR = Q3 - Q1
-                            lower = Q1 - 1.5 * IQR
-                            upper = Q3 + 1.5 * IQR
-                            df[col] = df[col].clip(lower=lower, upper=upper)
+    st.subheader("📦 Boxplot Sebelum & Sesudah Penanganan Outlier")
+    col3, col4 = st.columns(2)
 
-                    st.subheader("📦 Boxplot Setelah Penanganan Outlier")
-                    fig4, ax4 = plt.subplots(figsize=(6, 4))
-                    sns.boxplot(data=df[num_cols], ax=ax4)
-                    ax4.set_title('Boxplot Setelah Outlier Handling')
-                    st.pyplot(fig4)
+    with col3:
+        st.caption("Sebelum")
+        fig3, ax3 = plt.subplots(figsize=(4, 3))
+        sns.boxplot(data=df[num_cols], ax=ax3)
+        ax3.set_xlabel("")
+        st.pyplot(fig3)
 
-                    # Normalisasi Z-Score
-                    st.subheader("📈 Data Setelah Normalisasi Z-Score")
-                    df_zscore = df.copy()
-                    df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
-                    st.dataframe(df_zscore[num_cols].head())
+    # Tangani outlier
+    for col in ['omset', 'modal']:
+        if col in df.columns:
+            Q1 = df[col].quantile(0.25)
+            Q3 = df[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower = Q1 - 1.5 * IQR
+            upper = Q3 + 1.5 * IQR
+            df[col] = df[col].clip(lower=lower, upper=upper)
+
+    with col4:
+        st.caption("Sesudah")
+        fig4, ax4 = plt.subplots(figsize=(4, 3))
+        sns.boxplot(data=df[num_cols], ax=ax4)
+        ax4.set_xlabel("")
+        st.pyplot(fig4)
+
+    # Normalisasi Z-Score
+    st.subheader("📈 Data Setelah Normalisasi Z-Score")
+    df_zscore = df.copy()
+    df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
+    st.dataframe(df_zscore[num_cols].head())
 
             except Exception as e:
                 st.error(f"🚨 Terjadi error saat preprocessing: {e}")
