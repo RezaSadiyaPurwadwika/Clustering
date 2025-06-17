@@ -10,7 +10,7 @@ st.markdown(
     <style>
         /* Navbar style */
         .navbar {
-            background-color: #007bff;
+            background-color: #87CEFA; /* Baby Blue / Light Sky Blue */
             padding: 1rem 2rem;
             color: white;
             display: flex;
@@ -35,7 +35,7 @@ st.markdown(
             text-align: center;
         }
 
-        /* Hapus kotak hitam */
+        /* File uploader clean */
         .file-upload-clean {
             margin-top: 2rem;
             width: 50%;
@@ -50,7 +50,7 @@ st.markdown(
 
     <!-- Navbar -->
     <div class="navbar">
-        <div><strong>Ensemble Rock Clustering</strong></div>
+        <div><strong>ARSHACLUST</strong></div>
         <div>
             <a href="#">Home</a>
             <a href="#">About</a>
