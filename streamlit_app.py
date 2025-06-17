@@ -50,10 +50,10 @@ st.markdown(
 
     <!-- Navbar -->
     <div class="navbar">
-        <div><strong>ARSHACLUST</strong></div>
+        <div><strong>Ensemble Rock Clustering</strong></div>
         <div>
             <a href="#">Home</a>
-            <a href="#">About</a>
+            <a href="#">Rules</a>
         </div>
     </div>
 
