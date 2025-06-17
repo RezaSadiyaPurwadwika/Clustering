@@ -135,7 +135,7 @@ if page == "home":
                     st.dataframe(df[num_cols].isnull().sum())
 
                     st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
-                    fig3, ax3 = plt.subplots(figsize=(10, 6))
+                    fig3, ax3 = plt.subplots(figsize=(6, 4))
                     sns.boxplot(data=df[num_cols], ax=ax3)
                     ax3.set_title('Boxplot Sebelum Outlier Handling')
                     st.pyplot(fig3)
@@ -151,7 +151,7 @@ if page == "home":
                             df[col] = df[col].clip(lower=lower, upper=upper)
 
                     st.subheader("📦 Boxplot Setelah Penanganan Outlier")
-                    fig4, ax4 = plt.subplots(figsize=(10, 6))
+                    fig4, ax4 = plt.subplots(figsize=(6, 4))
                     sns.boxplot(data=df[num_cols], ax=ax4)
                     ax4.set_title('Boxplot Setelah Outlier Handling')
                     st.pyplot(fig4)
