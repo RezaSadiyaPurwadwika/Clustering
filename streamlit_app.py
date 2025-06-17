@@ -61,8 +61,8 @@ st.markdown("""
 # =========================
 # Tangkap Event dari Tombol HTML
 # =========================
-if st.experimental_get_query_params().get("page"):
-    st.session_state.page = st.experimental_get_query_params()["page"][0]
+if st.query_params.get("page"):
+    st.session_state.page = st.query_params["page"][0]
 
 # =========================
 # Konten Halaman
