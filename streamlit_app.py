@@ -4,10 +4,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import zscore
 import io
+import numpy as np
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
+from scipy.cluster.hierarchy import dendrogram, linkage
 
 st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Atur halaman awal
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -15,7 +19,6 @@ query_params = st.query_params
 if "page" in query_params:
     st.session_state.page = query_params["page"]
 
-# Styling CSS
 st.markdown("""
     <style>
     .navbar {
@@ -62,7 +65,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Navbar
 page = st.session_state.page
 st.markdown(f"""
 <div class="navbar">
@@ -72,9 +74,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# =====================
-# HOME PAGE
-# =====================
 if page == "home":
     st.markdown("""
     <div class="hero">
@@ -98,46 +97,45 @@ if page == "home":
 
         if run_preprocessing:
             try:
-                # Bersihkan kolom kategorikal
                 if 'jenis' in df.columns:
                     df['jenis'] = df['jenis'].astype(str).str.strip().str.lower()
                 if 'ojol' in df.columns:
                     df['ojol'] = df['ojol'].astype(str).str.strip().str.lower()
 
-                st.subheader("✅ Distribusi Kategori")
-                col1, col2 = st.columns(2)
-
                 if 'jenis' in df.columns:
-                    with col1:
-                        st.caption("Distribusi 'jenis'")
-                        fig1, ax1 = plt.subplots(figsize=(3, 2))
-                        sns.countplot(data=df, x='jenis', ax=ax1)
-                        ax1.set_title("Jenis", fontsize=10)
-                        st.pyplot(fig1)
+                    st.subheader("✅ Distribusi Kategori 'jenis'")
+                    fig1, ax1 = plt.subplots(figsize=(4, 3))
+                    sns.countplot(data=df, x='jenis', ax=ax1)
+                    ax1.set_title("Distribusi Kategori: jenis")
+                    st.pyplot(fig1)
 
                 if 'ojol' in df.columns:
-                    with col2:
-                        st.caption("Distribusi 'ojol'")
-                        fig2, ax2 = plt.subplots(figsize=(3, 2))
-                        sns.countplot(data=df, x='ojol', ax=ax2)
-                        ax2.set_title("Ojol", fontsize=10)
-                        st.pyplot(fig2)
+                    st.subheader("✅ Distribusi Kategori 'ojol'")
+                    fig2, ax2 = plt.subplots(figsize=(4, 3))
+                    sns.countplot(data=df, x='ojol', ax=ax2)
+                    ax2.set_title("Distribusi Kategori: ojol")
+                    st.pyplot(fig2)
 
-                st.subheader("📊 Statistik Deskriptif")
+                st.subheader("ℹ️ Info Dataset")
+                buffer = io.StringIO()
+                df.info(buf=buffer)
+                st.text(buffer.getvalue())
+
+                st.subheader("📊 Statistik Deskriptif (Numerik)")
                 num_cols = [col for col in ['omset', 'tenaga_kerja', 'modal'] if col in df.columns]
-
                 if not num_cols:
-                    st.error("❌ Kolom numerik tidak ditemukan.")
+                    st.error("❌ Kolom numerik tidak ditemukan: 'omset', 'tenaga_kerja', atau 'modal'")
                 else:
                     st.dataframe(df[num_cols].describe())
 
-                    col3, col4 = st.columns(2)
-                    with col3:
-                        st.caption("📦 Sebelum Outlier")
-                        fig3, ax3 = plt.subplots(figsize=(3, 2))
-                        sns.boxplot(data=df[num_cols], ax=ax3)
-                        ax3.set_title("Sebelum")
-                        st.pyplot(fig3)
+                    st.subheader("🔍 Missing Values")
+                    st.dataframe(df[num_cols].isnull().sum())
+
+                    st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
+                    fig3, ax3 = plt.subplots(figsize=(5, 3))
+                    sns.boxplot(data=df[num_cols], ax=ax3)
+                    ax3.set_title('Boxplot Sebelum Outlier Handling')
+                    st.pyplot(fig3)
 
                     for col in ['omset', 'modal']:
                         if col in df.columns:
@@ -148,24 +146,94 @@ if page == "home":
                             upper = Q3 + 1.5 * IQR
                             df[col] = df[col].clip(lower=lower, upper=upper)
 
-                    with col4:
-                        st.caption("📦 Setelah Outlier")
-                        fig4, ax4 = plt.subplots(figsize=(3, 2))
-                        sns.boxplot(data=df[num_cols], ax=ax4)
-                        ax4.set_title("Sesudah")
-                        st.pyplot(fig4)
+                    st.subheader("📦 Boxplot Setelah Penanganan Outlier")
+                    fig4, ax4 = plt.subplots(figsize=(5, 3))
+                    sns.boxplot(data=df[num_cols], ax=ax4)
+                    ax4.set_title('Boxplot Setelah Outlier Handling')
+                    st.pyplot(fig4)
 
-                    st.subheader("📈 Normalisasi Z-Score")
+                    st.subheader("📈 Data Setelah Normalisasi Z-Score")
                     df_zscore = df.copy()
                     df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
                     st.dataframe(df_zscore[num_cols].head())
 
-            except Exception as e:
-                st.error(f"🚨 Error saat preprocessing: {e}")
+                    clustering_num = st.button("🔗 Clustering Numerik (Agglomerative)")
+                    if clustering_num:
+                        try:
+                            X = df_zscore[['omset', 'tenaga_kerja', 'modal']]
+                            X_scaled = StandardScaler().fit_transform(X)
 
-# =====================
-# ABOUT PAGE
-# =====================
+                            n = len(X_scaled)
+                            global_mean = np.mean(X_scaled, axis=0)
+
+                            linkage_types = ['single', 'complete', 'average']
+                            best_result = {'k': None, 'link': None, 'PseudoF': -np.inf, 'ICD': np.inf}
+
+                            log_output = ""
+
+                            for link in linkage_types:
+                                for k in range(2, 7):
+                                    model = AgglomerativeClustering(n_clusters=k, linkage=link)
+                                    labels = model.fit_predict(X_scaled)
+
+                                    SW, SB = 0, 0
+                                    for cl in np.unique(labels):
+                                        cluster_data = X_scaled[labels == cl]
+                                        mean_cl = np.mean(cluster_data, axis=0)
+                                        SW += np.sum((cluster_data - mean_cl) ** 2)
+                                        SB += len(cluster_data) * np.sum((mean_cl - global_mean) ** 2)
+
+                                    pseudoF = (SB / (k - 1)) / (SW / (n - k)) if SW != 0 else np.inf
+                                    ICD = SW / n
+
+                                    log_output += f"Linkage: {link}, k={k} → Pseudo-F: {pseudoF:.4f}, ICD: {ICD:.4f}\n"
+
+                                    if pseudoF > best_result['PseudoF']:
+                                        best_result = {'k': k, 'link': link, 'PseudoF': pseudoF, 'ICD': ICD}
+
+                            st.code(log_output, language='text')
+
+                            st.success(f"✅ Linkage terbaik: {best_result['link'].upper()}, Cluster: {best_result['k']}")
+                            best_model = AgglomerativeClustering(n_clusters=best_result['k'], linkage=best_result['link'])
+                            best_labels = best_model.fit_predict(X_scaled)
+                            df['cluster_numerik'] = best_labels
+
+                            st.subheader("📊 Visualisasi Clustering dengan t-SNE")
+                            tsne = TSNE(n_components=2, random_state=42)
+                            X_reduced = tsne.fit_transform(X_scaled)
+
+                            fig_tsne, ax_tsne = plt.subplots(figsize=(6, 4))
+                            for cl in np.unique(best_labels):
+                                ax_tsne.scatter(
+                                    X_reduced[best_labels == cl, 0],
+                                    X_reduced[best_labels == cl, 1],
+                                    label=f'Cluster {cl + 1}'
+                                )
+                            ax_tsne.set_title(f'Clustering t-SNE (Linkage={best_result["link"].upper()}, k={best_result["k"]})')
+                            ax_tsne.set_xlabel('t-SNE 1')
+                            ax_tsne.set_ylabel('t-SNE 2')
+                            ax_tsne.legend()
+                            ax_tsne.grid(True)
+                            st.pyplot(fig_tsne)
+
+                            st.subheader("🌳 Dendrogram Hirarki")
+                            fig_dendro, ax_dendro = plt.subplots(figsize=(8, 4))
+                            linked = linkage(X_scaled, method=best_result['link'])
+                            dendrogram(linked, ax=ax_dendro, orientation='top', distance_sort='descending', show_leaf_counts=False)
+                            ax_dendro.set_title(f'Dendrogram Linkage={best_result["link"].upper()}')
+                            ax_dendro.set_xlabel('Data')
+                            ax_dendro.set_ylabel('Jarak')
+                            st.pyplot(fig_dendro)
+
+                            st.subheader("🧾 Data dengan Label Cluster")
+                            st.dataframe(df[['omset', 'tenaga_kerja', 'modal', 'cluster_numerik']])
+
+                        except Exception as e:
+                            st.error(f"🚨 Gagal menjalankan clustering: {e}")
+
+            except Exception as e:
+                st.error(f"🚨 Terjadi error saat preprocessing: {e}")
+
 elif page == "about":
     st.subheader("📋 Tentang Aplikasi")
     st.markdown("""
@@ -173,9 +241,6 @@ elif page == "about":
     Dengan metode **Agglomerative Hierarchical Clustering** dan **Robust Clustering using Links (Ensemble ROCK)**, aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.
     """)
 
-# =====================
-# RULES PAGE
-# =====================
 elif page == "rules":
     st.subheader("📜 Hal yang Perlu Diperhatikan")
     st.markdown("""
