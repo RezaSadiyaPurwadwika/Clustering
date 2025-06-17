@@ -96,7 +96,7 @@ if page == "home":
 
         run_preprocessing = st.button("🔧 Jalankan Preprocessing")
 
-        if run_preprocessing:
+if run_preprocessing:
     try:
         # Bersihkan kolom kategorikal
         if 'jenis' in df.columns:
@@ -104,9 +104,7 @@ if page == "home":
         if 'ojol' in df.columns:
             df['ojol'] = df['ojol'].astype(str).str.strip().str.lower()
 
-        # ============================
-        # Distribusi kategori (compact)
-        # ============================
+        # Distribusi kategori
         if 'jenis' in df.columns or 'ojol' in df.columns:
             st.subheader("✅ Distribusi Kategori")
             col1, col2 = st.columns(2)
@@ -131,7 +129,7 @@ if page == "home":
                     ax2.tick_params(axis='y', labelsize=8)
                     st.pyplot(fig2)
 
-        # ============================
+        # Info dataset
         st.subheader("ℹ️ Info Dataset")
         buffer = io.StringIO()
         df.info(buf=buffer)
@@ -147,9 +145,7 @@ if page == "home":
             st.subheader("🔍 Missing Values")
             st.dataframe(df[num_cols].isnull().sum())
 
-            # ============================
-            # Boxplot compact
-            # ============================
+            # Boxplot Sebelum dan Sesudah
             st.subheader("📦 Boxplot Sebelum & Sesudah Penanganan Outlier")
             col3, col4 = st.columns(2)
 
@@ -184,11 +180,9 @@ if page == "home":
             st.subheader("📈 Data Setelah Normalisasi Z-Score")
             df_zscore = df.copy()
             df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
-            st.dataframe(df_zscore[num_cols].head())
 
     except Exception as e:
         st.error(f"🚨 Terjadi error saat preprocessing: {e}")
-
 
 # =====================
 # ABOUT PAGE
