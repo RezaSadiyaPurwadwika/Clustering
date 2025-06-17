@@ -1,103 +1,50 @@
 import streamlit as st
 import pandas as pd
 
-# Konfigurasi halaman
+# Set page config
 st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
 
-# ==========================
-# Navigasi State
-# ==========================
+# Inisialisasi page state
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ==========================
-# Fungsi Navigasi
-# ==========================
-def go_home():
-    st.session_state.page = "home"
+# =========================
+# Navbar (dengan tombol Streamlit)
+# =========================
+col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+with col1:
+    st.markdown("### 🌐 Ensemble Rock Clustering")
+with col2:
+    if st.button("Home"):
+        st.session_state.page = "home"
+with col3:
+    if st.button("About"):
+        st.session_state.page = "about"
+with col4:
+    if st.button("Rules"):
+        st.session_state.page = "rules"
 
-def go_about():
-    st.session_state.page = "about"
-
-def go_rules():
-    st.session_state.page = "rules"
-
-# ==========================
-# CSS dan Navbar
-# ==========================
-st.markdown("""
-<style>
-    .navbar {
-        background-color: #37517e;
-        padding: 1rem 2rem;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .navbar a {
-        color: white;
-        margin-left: 2rem;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .navbar a:hover {
-        text-decoration: underline;
-    }
-    .hero {
-        padding: 4rem 2rem 2rem;
-        background-color: #87CEFA;
-        color: #003366;
-        text-align: center;
-    }
-    .file-upload-clean {
-        margin-top: 2rem;
-        width: 50%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ==========================
-# Navbar
-# ==========================
-st.markdown("""
-<div class="navbar">
-    <div><strong>🌐 Ensemble Rock Clustering</strong></div>
-    <div>
-        <a href="#" onclick="window.location.reload()">Home</a>
-        <a href="#" onclick="window.location.search='?page=about'">About</a>
-        <a href="#" onclick="window.location.search='?page=rules'">Rules</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ==========================
-# Komponen Halaman
-# ==========================
+# =========================
+# Tampilan Halaman
+# =========================
 def show_home():
     st.markdown("""
-        <div class="hero">
+        <div style='padding: 4rem 2rem; background-color: #87CEFA; color: #003366; text-align: center; border-radius: 10px'>
             <h1><strong>Better Solutions for Your Clustering</strong></h1>
-            <p>Read the About menu before uploading data</p>
-            <div class="file-upload-clean">
-        """, unsafe_allow_html=True)
+            <p>Please read the About menu before uploading data.</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-    uploaded_file = st.file_uploader("", type=["csv"])
+    uploaded_file = st.file_uploader("Upload your CSV data", type=["csv"])
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.write("### Preview of Uploaded Data")
         st.dataframe(df)
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
-
-
 def show_about():
     st.markdown("""
-    <div style='padding: 3rem 2rem; background-color: #f0f2f6; border-radius: 10px;'>
+    <div style='padding: 2rem; background-color: #f0f2f6; border-radius: 10px;'>
         <h2>About This App</h2>
         <p>
             This application helps cluster MSMEs based on characteristics such as business type, capital, revenue, and workforce.
@@ -107,10 +54,9 @@ def show_about():
     </div>
     """, unsafe_allow_html=True)
 
-
 def show_rules():
     st.markdown("""
-    <div style='padding: 3rem 2rem; background-color: #f8f9fa; border-radius: 10px;'>
+    <div style='padding: 2rem; background-color: #f8f9fa; border-radius: 10px;'>
         <h2>⚠️ Important Guidelines</h2>
         <ul>
             <li>Upload files in <strong>.csv</strong> format (max 200MB).</li>
@@ -127,16 +73,12 @@ def show_rules():
     </div>
     """, unsafe_allow_html=True)
 
-
-# ==========================
-# Routing Berdasarkan Query
-# ==========================
-query_params = st.query_params
-page = query_params.get("page", ["home"])[0]
-
-if page == "about":
-    show_about()
-elif page == "rules":
-    show_rules()
-else:
+# =========================
+# Render halaman sesuai state
+# =========================
+if st.session_state.page == "home":
     show_home()
+elif st.session_state.page == "about":
+    show_about()
+elif st.session_state.page == "rules":
+    show_rules()
