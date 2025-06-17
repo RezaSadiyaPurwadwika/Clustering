@@ -4,7 +4,7 @@ import pandas as pd
 # ========== Konfigurasi Halaman ==========
 st.set_page_config(page_title="ArshaClust Landing", layout="wide")
 
-# ========== Custom CSS & Layout ==========
+# ========== CSS + HTML ==========
 st.markdown(
     """
     <style>
@@ -29,16 +29,24 @@ st.markdown(
 
         /* Hero section */
         .hero {
-            padding: 6rem 2rem 4rem;
+            padding: 4rem 2rem 2rem;
             background-color: #37517e;
             color: white;
             text-align: center;
         }
 
-        /* Upload box center */
-        .upload-box {
-            text-align: center;
+        .upload-area {
             margin-top: 2rem;
+            background-color: #2c3e50;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stFileUploader > label {
+            display: none;
         }
     </style>
 
@@ -55,20 +63,24 @@ st.markdown(
     <div class="hero">
         <h1><strong>Better Solutions for Your Clustering</strong></h1>
         <p>Upload your data and get started with powerful clustering tools</p>
-    </div>
+        <div class="upload-area">
     """,
     unsafe_allow_html=True
 )
 
-# ========== Upload File Section ==========
-with st.container():
-    st.markdown('<div class="upload-box">', unsafe_allow_html=True)
-    st.subheader("📂 Upload Your CSV File")
-    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], label_visibility="collapsed")
+# ========== Upload File di Dalam Kotak Biru ==========
+uploaded_file = st.file_uploader("", type=["csv"])
 
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write("### Preview of Uploaded Data")
-        st.dataframe(df)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.write("### Preview of Uploaded Data")
+    st.dataframe(df)
+
+# ========== Tutup DIV Upload Area & Hero ==========
+st.markdown(
+    """
+        </div> <!-- end upload-area -->
+    </div> <!-- end hero -->
+    """,
+    unsafe_allow_html=True
+)
