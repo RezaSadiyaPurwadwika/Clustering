@@ -77,24 +77,23 @@ if page == "home":
     </div>
     """, unsafe_allow_html=True)
 
-    st.subheader("📤 Upload Your CSV File")
+    st.subheader("📂 Upload Your CSV File")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.dataframe(df)
 
 elif page == "about":
-    st.subheader("🧩 Tentang Aplikasi")
+    st.subheader("📋 Tentang Aplikasi")
     st.markdown("""
     Aplikasi ini dirancang untuk mengelompokkan UMKM berdasarkan karakteristik usaha seperti jenis, modal, omset, dan tenaga kerja.  
     Dengan metode **Agglomerative Hierarchical Clustering** dan **Robust Clustering using Links (Ensemble ROCK)**, aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.
     """)
 
 elif page == "rules":
-    st.subheader("📜 Rules")
+    st.subheader("📜 Hal yang Perlu Diperhatikan")
 
     st.markdown("""
-    ### ⚠️ Hal yang Perlu Diperhatikan
     File yang diunggah harus berformat **`.csv`** dan maksimal **200MB**.
 
     **Data harus memiliki kolom berikut:**
