@@ -1,31 +1,71 @@
 import streamlit as st
 import pandas as pd
 
-# Set page config
 st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
 
-# Inisialisasi page state
+# Inisialisasi halaman
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
 # =========================
-# Navbar (dengan tombol Streamlit)
+# CSS untuk Navbar dan Tombol
 # =========================
-col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-with col1:
-    st.markdown("### 🌐 Ensemble Rock Clustering")
-with col2:
-    if st.button("Home"):
-        st.session_state.page = "home"
-with col3:
-    if st.button("About"):
-        st.session_state.page = "about"
-with col4:
-    if st.button("Rules"):
-        st.session_state.page = "rules"
+st.markdown("""
+<style>
+    .navbar {
+        background-color: #003366;
+        padding: 1.2rem 2rem;
+        color: white;
+        border-radius: 0 0 10px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .navbar-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+    }
+    .navbar-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+    .navbar-buttons button {
+        background-color: white;
+        color: #003366;
+        border: 2px solid #003366;
+        padding: 0.4rem 1.2rem;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .navbar-buttons button:hover {
+        background-color: #003366;
+        color: white;
+    }
+</style>
+
+<div class="navbar">
+    <div class="navbar-title">🌐 Ensemble Rock Clustering</div>
+    <div class="navbar-buttons">
+        <form action="" method="post">
+            <button name="page" value="home">Home</button>
+            <button name="page" value="about">About</button>
+            <button name="page" value="rules">Rules</button>
+        </form>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # =========================
-# Tampilan Halaman
+# Tangkap Event dari Tombol HTML
+# =========================
+if st.experimental_get_query_params().get("page"):
+    st.session_state.page = st.experimental_get_query_params()["page"][0]
+
+# =========================
+# Konten Halaman
 # =========================
 def show_home():
     st.markdown("""
@@ -36,7 +76,6 @@ def show_home():
     """, unsafe_allow_html=True)
 
     uploaded_file = st.file_uploader("Upload your CSV data", type=["csv"])
-
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.write("### Preview of Uploaded Data")
@@ -62,19 +101,18 @@ def show_rules():
             <li>Upload files in <strong>.csv</strong> format (max 200MB).</li>
             <li>Ensure the following columns exist:
                 <ul>
-                    <li><code>modal</code>, <code>omset</code>, <code>tenaga_kerja</code>: whole numbers (no dots or commas).</li>
+                    <li><code>modal</code>, <code>omset</code>, <code>tenaga_kerja</code>: numbers only (no dots or commas).</li>
                     <li><code>ojol</code>: values must be <strong>Ya</strong> or <strong>Tidak</strong>.</li>
                     <li><code>jenis</code>: values must be <strong>mamin</strong> or <strong>oleh</strong>.</li>
                 </ul>
             </li>
             <li>Clean and format your data properly before uploading.</li>
-            <li>It is recommended to read the <strong>About</strong> page before uploading your data.</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
 
 # =========================
-# Render halaman sesuai state
+# Tampilkan Halaman Aktif
 # =========================
 if st.session_state.page == "home":
     show_home()
