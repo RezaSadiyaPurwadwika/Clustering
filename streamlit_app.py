@@ -1,14 +1,57 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Ensemble Rock Clustering", layout="wide")
+st.set_page_config(page_title="Ensemble ROCK Clustering", layout="wide")
 
 # Inisialisasi halaman
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
-# Custom navbar pakai tombol teks
-col1, col2, col3 = st.columns([1,1,1])
+# CSS untuk styling navbar dan judul
+st.markdown("""
+    <style>
+    .main-header {
+        background-color: #003366;
+        padding: 20px 0;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+    .main-header button {
+        background-color: transparent;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        border: none;
+        margin: 0 20px;
+    }
+    .main-header button:hover {
+        background-color: #87CEFA;
+        color: #003366;
+        border-radius: 10px;
+        padding: 10px 20px;
+    }
+    .hero {
+        background-color: #87CEFA;
+        padding: 50px 0;
+        text-align: center;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    .hero h1 {
+        font-size: 42px;
+        font-weight: bold;
+        color: #003366;
+    }
+    .hero p {
+        font-size: 18px;
+        color: #003366;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Navbar
+st.markdown("<div class='main-header'>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 1, 1])
 with col1:
     if st.button("🏠 Home"):
         st.session_state.page = "Home"
@@ -18,45 +61,28 @@ with col2:
 with col3:
     if st.button("📜 Rules"):
         st.session_state.page = "Rules"
+st.markdown("</div>", unsafe_allow_html=True)
 
-# CSS untuk mengganti warna teks tombol jadi putih
-st.markdown("""
-    <style>
-    .stButton > button {
-        background-color: transparent;
-        color: white;
-        border: none;
-        font-size: 18px;
-        font-weight: bold;
-        padding: 10px;
-    }
-    .stButton > button:hover {
-        background-color: #87CEFA;
-        color: #003366;
-        border-radius: 8px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Background navbar
-st.markdown("""
-    <div style='position: absolute; top: 0; left: 0; width: 100%; height: 80px; background-color: #003366; z-index: -1; border-radius: 0 0 20px 20px;'></div>
-    <br><br>
-""", unsafe_allow_html=True)
-
-# Tampilkan halaman
+# Halaman Home
 if st.session_state.page == "Home":
-    st.markdown("<h1 style='text-align: center;'>Better Solutions for Your Clustering</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Please read the About & Rules menu first.</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class="hero">
+            <h1>Better Solutions for Your Clustering</h1>
+            <p>Please read the About & Rules menu first.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
     uploaded_file = st.file_uploader("Upload your CSV data", type="csv")
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.dataframe(df)
 
+# Halaman About
 elif st.session_state.page == "About":
-    st.subheader("About this App")
-    st.markdown("Aplikasi ini digunakan untuk membantu clustering UMKM...")
+    st.subheader("About This App")
+    st.markdown("Aplikasi ini dirancang untuk membantu analisis klaster UMKM menggunakan pendekatan Ensemble ROCK...")
 
+# Halaman Rules
 elif st.session_state.page == "Rules":
-    st.subheader("Aturan Penggunaan")
-    st.markdown("Mohon pastikan file Anda sudah sesuai format...")
+    st.subheader("Usage Rules")
+    st.markdown("Silakan unggah file dalam format .csv dengan struktur data yang benar...")
