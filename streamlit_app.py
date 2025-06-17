@@ -107,7 +107,7 @@ def show_about():
 # ==============================
 # Tampilan Berdasarkan State
 # ==============================
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 if "about" in query_params:
     show_about()
 else:
