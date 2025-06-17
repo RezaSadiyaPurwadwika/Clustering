@@ -89,4 +89,14 @@ elif page == "about":
 
 elif page == "rules":
     st.subheader("📜 Rules")
-    st.markdown("Silakan upload data yang sesuai format, tidak ada missing values, dan variabel kategorikal jelas...")
+
+    st.markdown("""
+    ### ⚠️ Hal yang Perlu Diperhatikan
+    File yang diunggah harus berformat **`.csv`** dan maksimal **200MB**.
+
+    **Data harus memiliki kolom berikut:**
+    - `modal`, `omset`, `tenaga_kerja`: isi dengan **angka bulat** tanpa titik atau koma.
+    - `ojol`: isi dengan **"Ya"** atau **"Tidak"**.
+    - `jenis`: isi dengan **"mamin"** (makanan/minuman) atau **"oleh"** (oleh-oleh).
+    """)
+
