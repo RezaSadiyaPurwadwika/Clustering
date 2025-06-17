@@ -1,16 +1,16 @@
 import streamlit as st
 import pandas as pd
 
-# ========== Konfigurasi Halaman ==========
+# Konfigurasi halaman
 st.set_page_config(page_title="ArshaClust Landing", layout="wide")
 
-# ========== CSS + HTML ==========
+# HTML + CSS
 st.markdown(
     """
     <style>
-        /* Navbar style */
+        /* Navbar: warna biru gelap */
         .navbar {
-            background-color: #87CEFA; /* Baby Blue / Light Sky Blue */
+            background-color: #37517e;
             padding: 1rem 2rem;
             color: white;
             display: flex;
@@ -27,15 +27,15 @@ st.markdown(
             text-decoration: underline;
         }
 
-        /* Hero section */
+        /* Hero section: warna baby blue */
         .hero {
             padding: 4rem 2rem 2rem;
-            background-color: #37517e;
-            color: white;
+            background-color: #87CEFA;
+            color: #003366;
             text-align: center;
         }
 
-        /* File uploader clean */
+        /* File uploader */
         .file-upload-clean {
             margin-top: 2rem;
             width: 50%;
@@ -66,7 +66,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ========== Upload File ==========
+# Upload file
 uploaded_file = st.file_uploader("", type=["csv"])
 
 if uploaded_file:
@@ -74,7 +74,7 @@ if uploaded_file:
     st.write("### Preview of Uploaded Data")
     st.dataframe(df)
 
-# ========== Tutup Div ==========
+# Tutup div
 st.markdown(
     """
         </div> <!-- end upload clean -->
