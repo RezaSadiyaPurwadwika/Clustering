@@ -1,8 +1,14 @@
 import streamlit as st
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import io
+from scipy.stats import zscore
 
+# Set konfigurasi halaman
 st.set_page_config(page_title="Clustering App", layout="wide")
 
+# Inisialisasi halaman default
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -67,7 +73,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Konten halaman
+# ===============================
+# HOME
+# ===============================
 if page == "home":
     st.markdown("""
     <div class="hero">
@@ -81,90 +89,90 @@ if page == "home":
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        st.success("✅ File berhasil diunggah!")
-
-        # Membersihkan nama kolom agar seragam
         df.columns = df.columns.str.strip().str.lower()
 
-        # Tampilkan kolom yang terbaca
-        st.markdown("**Kolom yang terdeteksi di CSV:**")
+        st.success("✅ File berhasil diunggah!")
+        st.markdown("### Kolom yang tersedia:")
         st.write(df.columns.tolist())
+
         st.dataframe(df)
 
-        # Cek kolom penting
-        expected_columns = ['omset', 'tenaga_kerja', 'modal']
-        missing = [col for col in expected_columns if col not in df.columns]
-
-        if missing:
-            st.error(f"❌ Kolom berikut tidak ditemukan di file: {', '.join(missing)}")
-            st.stop()
-
-        # Tampilkan tombol di luar blok proses berat
         run_preprocessing = st.button("🔧 Jalankan Preprocessing")
 
         if run_preprocessing:
-            # Mulai PREPROCESSING
+            # Bersihkan string
+            for col in ['jenis', 'ojol']:
+                if col in df.columns:
+                    df[col] = df[col].astype(str).str.strip().str.lower()
 
-            # Mulai PREPROCESSING
-            df['jenis'] = df['jenis'].str.strip().str.lower()
-            df['ojol'] = df['ojol'].str.strip().str.lower()
+            # Visualisasi kategori
+            if 'jenis' in df.columns:
+                st.subheader("✅ Distribusi Kategori 'jenis'")
+                fig1, ax1 = plt.subplots()
+                sns.countplot(data=df, x='jenis', ax=ax1)
+                ax1.set_title("Distribusi Kategori: jenis")
+                st.pyplot(fig1)
+            else:
+                st.error("❌ Kolom 'jenis' tidak ditemukan di data.")
 
-            import seaborn as sns
-            import matplotlib.pyplot as plt
-            import io
+            if 'ojol' in df.columns:
+                st.subheader("✅ Distribusi Kategori 'ojol'")
+                fig2, ax2 = plt.subplots()
+                sns.countplot(data=df, x='ojol', ax=ax2)
+                ax2.set_title("Distribusi Kategori: ojol")
+                st.pyplot(fig2)
+            else:
+                st.error("❌ Kolom 'ojol' tidak ditemukan di data.")
 
-            st.subheader("✅ Distribusi Kategori 'jenis'")
-            fig1, ax1 = plt.subplots()
-            sns.countplot(data=df, x='jenis', ax=ax1)
-            ax1.set_title("Distribusi Kategori: jenis")
-            st.pyplot(fig1)
-
-            st.subheader("✅ Distribusi Kategori 'ojol'")
-            fig2, ax2 = plt.subplots()
-            sns.countplot(data=df, x='ojol', ax=ax2)
-            ax2.set_title("Distribusi Kategori: ojol")
-            st.pyplot(fig2)
-
+            # Info dataset
             st.subheader("ℹ️ Info Dataset")
             buffer = io.StringIO()
             df.info(buf=buffer)
             st.text(buffer.getvalue())
 
-            st.subheader("📊 Statistik Deskriptif (Numerik)")
-            st.dataframe(df[['omset', 'tenaga_kerja', 'modal']].describe())
+            # Statistik deskriptif numerik
+            num_cols = ['omset', 'tenaga_kerja', 'modal']
+            existing_cols = [col for col in num_cols if col in df.columns]
 
-            st.subheader("🔍 Missing Values")
-            st.dataframe(df.isnull().sum())
+            if existing_cols:
+                st.subheader("📊 Statistik Deskriptif (Numerik)")
+                st.dataframe(df[existing_cols].describe())
 
-            st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
-            fig3, ax3 = plt.subplots(figsize=(10, 6))
-            sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax3)
-            ax3.set_title('Boxplot Kolom Omset, Tenaga Kerja, dan Modal')
-            st.pyplot(fig3)
+                # Boxplot sebelum outlier
+                st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
+                fig3, ax3 = plt.subplots(figsize=(10, 6))
+                sns.boxplot(data=df[existing_cols], ax=ax3)
+                ax3.set_title('Boxplot Sebelum Outlier')
+                st.pyplot(fig3)
 
-            # Outlier handling
-            for col in ['omset', 'modal']:
-                Q1 = df[col].quantile(0.25)
-                Q3 = df[col].quantile(0.75)
-                IQR = Q3 - Q1
-                lower_bound = Q1 - 1.5 * IQR
-                upper_bound = Q3 + 1.5 * IQR
-                df[col] = df[col].clip(lower=lower_bound, upper=upper_bound)
+                # Outlier handling
+                for col in ['omset', 'modal']:
+                    if col in df.columns:
+                        Q1 = df[col].quantile(0.25)
+                        Q3 = df[col].quantile(0.75)
+                        IQR = Q3 - Q1
+                        lower = Q1 - 1.5 * IQR
+                        upper = Q3 + 1.5 * IQR
+                        df[col] = df[col].clip(lower, upper)
 
-            st.subheader("📦 Boxplot Setelah Penanganan Outlier")
-            fig4, ax4 = plt.subplots(figsize=(10, 6))
-            sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax4)
-            ax4.set_title('Boxplot Setelah Penanganan Outlier')
-            st.pyplot(fig4)
+                # Boxplot sesudah outlier
+                st.subheader("📦 Boxplot Setelah Penanganan Outlier")
+                fig4, ax4 = plt.subplots(figsize=(10, 6))
+                sns.boxplot(data=df[existing_cols], ax=ax4)
+                ax4.set_title('Boxplot Setelah Outlier')
+                st.pyplot(fig4)
 
-            from scipy.stats import zscore
-            df_zscore = df.copy()
-            cols_to_normalize = ['omset', 'tenaga_kerja', 'modal']
-            df_zscore[cols_to_normalize] = df_zscore[cols_to_normalize].apply(zscore)
+                # Z-Score normalisasi
+                st.subheader("📈 Data Setelah Normalisasi Z-Score")
+                df_zscore = df.copy()
+                df_zscore[existing_cols] = df_zscore[existing_cols].apply(zscore)
+                st.dataframe(df_zscore[existing_cols].head())
+            else:
+                st.warning("Kolom numerik tidak ditemukan.")
 
-            st.subheader("📈 Data Setelah Normalisasi Z-Score")
-            st.dataframe(df_zscore[cols_to_normalize].head())
-
+# ===============================
+# ABOUT
+# ===============================
 elif page == "about":
     st.subheader("📋 Tentang Aplikasi")
     st.markdown("""
@@ -172,6 +180,9 @@ elif page == "about":
     Dengan metode **Agglomerative Hierarchical Clustering** dan **Robust Clustering using Links (Ensemble ROCK)**, aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.
     """)
 
+# ===============================
+# RULES
+# ===============================
 elif page == "rules":
     st.subheader("📜 Hal yang Perlu Diperhatikan")
     st.markdown("""
