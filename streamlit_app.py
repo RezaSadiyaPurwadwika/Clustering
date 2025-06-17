@@ -6,17 +6,26 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 
 # ========== Judul Halaman ==========
-st.set_page_config(page_title="Template GUI Clustering", layout="wide")
-st.title("🧩 Template GUI Clustering Data")
+st.set_page_config(page_title="GUI Ensemble Rock Clustering", layout="wide")
+st.title("🧩 GUI Ensemble Rock Clustering")
 
-# ========== 1. Upload Data ==========
-st.header("📂 Upload Data")
-uploaded_file = st.file_uploader("Unggah file CSV", type=["csv"])
+# ========== Buat Dua Kolom ==========
+col1, col2 = st.columns(2)
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    st.write("### Data Awal")
-    st.dataframe(df)
+with col1:
+    st.header("📂 Upload Data")
+    uploaded_file = st.file_uploader("Unggah file CSV", type=["csv"])
 
-    # ========== 2. Preprocessing ==========
+with col2:
     st.header("⚙️ Data Preprocessing")
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        st.write("### Data Awal")
+        st.dataframe(df)
+
+        # Contoh preprocessing awal (bisa dikembangkan lagi)
+        df_clean = df.dropna()
+        st.write("### Setelah Menghapus Missing Values")
+        st.dataframe(df_clean)
+    else:
+        st.info("Silakan upload file terlebih dahulu untuk preprocessing.")
