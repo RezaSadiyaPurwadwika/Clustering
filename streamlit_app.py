@@ -71,7 +71,7 @@ def show_home():
     st.markdown("""
         <div style='padding: 4rem 2rem; background-color: #87CEFA; color: #003366; text-align: center; border-radius: 10px'>
             <h1><strong>Better Solutions for Your Clustering</strong></h1>
-            <p>Please read the About menu before uploading data.</p>
+            <p>Please read the About & Rules menu first</p>
         </div>
     """, unsafe_allow_html=True)
 
