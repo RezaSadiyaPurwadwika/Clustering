@@ -305,6 +305,33 @@ elif menu == "🧮 Clustering Kategorik":
             ax.set_ylabel("Jumlah Data")
             st.pyplot(fig)
 
+            # 4. Visualisasi t-SNE Hasil Clustering ROCK
+            st.subheader("🔍 Visualisasi t-SNE Hasil Clustering ROCK")
+            encoded = pd.DataFrame()
+            for col in df_cat.columns:
+                le = LabelEncoder()
+                encoded[col] = le.fit_transform(df_cat[col])
+
+            sim_matrix = jaccard_similarity_matrix(encoded)
+            dist_matrix = 1 - sim_matrix
+
+            tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+            X_tsne = tsne.fit_transform(dist_matrix)
+
+            fig_tsne = plt.figure(figsize=(8, 6))
+            for cl in np.unique(best_labels):
+                plt.scatter(
+                    X_tsne[best_labels == cl, 0],
+                    X_tsne[best_labels == cl, 1],
+                    label=f'Cluster {cl}'
+                )
+            plt.title(f'Visualisasi ROCK Clustering\nTheta={best_theta}, k={best_k}, CP*={best_cp:.4f}')
+            plt.xlabel('t-SNE 1')
+            plt.ylabel('t-SNE 2')
+            plt.legend()
+            plt.grid(True)
+            st.pyplot(fig_tsne)
+
         except Exception as e:
             st.error(f"❌ Terjadi kesalahan saat melakukan clustering ROCK: {e}")
 
