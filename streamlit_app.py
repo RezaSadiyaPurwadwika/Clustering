@@ -9,7 +9,7 @@ import io
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
 
 # Sidebar Navigasi
-st.sidebar.title("🧭 Menu Navigasi")
+st.sidebar.title("🛍️ Menu Navigasi")
 menu = st.sidebar.radio("Pilih halaman:", [
     "🏠 Home",
     "📂 Upload Data",
@@ -91,15 +91,22 @@ elif menu == "⚙️ Data Preprocessing":
             df.info(buf=buffer)
             st.text(buffer.getvalue())
 
+            print("Info Dataset:")
+            print(df.info())
+
             cols_num = ['omset', 'tenaga_kerja', 'modal']
             cols_ada = [col for col in cols_num if col in df.columns]
             if cols_ada:
                 st.dataframe(df[cols_ada].describe())
+
+                print("\nStatistik Deskriptif Variabel Numerik:")
+                print(df[cols_ada].describe())
             else:
                 st.error("❌ Tidak ditemukan kolom numerik yang sesuai.")
 
             st.subheader("3. Cek Missing Values")
             st.dataframe(df.isnull().sum())
+            print("\nMissing Values:\n", df.isnull().sum())
 
             if cols_ada:
                 st.subheader("4. Boxplot Sebelum Outlier Handling")
