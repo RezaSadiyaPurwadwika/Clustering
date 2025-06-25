@@ -1,197 +1,107 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy.stats import zscore
 import io
 
 st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Inisialisasi halaman
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+# Sidebar dengan menu navigasi
+menu = st.sidebar.radio("🔧 Menu Navigasi", [
+    "Upload Data",
+    "Data Preprocessing",
+    "Clustering Numerik",
+    "Clustering Kategorik",
+    "Clustering Ensemble"
+])
 
-query_params = st.query_params
-if "page" in query_params:
-    st.session_state.page = query_params["page"]
+# Global storage
+if "df" not in st.session_state:
+    st.session_state.df = None
+if "df_zscore" not in st.session_state:
+    st.session_state.df_zscore = None
 
-# ====================
-# STYLING
-# ====================
-st.markdown("""
-    <style>
-    .navbar {
-        background-color: #002B5B;
-        padding: 1rem;
-        border-radius: 0 0 15px 15px;
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-    }
-    .nav-item {
-        color: #ADD8E6;
-        font-weight: bold;
-        font-size: 18px;
-        text-decoration: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 12px;
-        transition: all 0.3s ease-in-out;
-    }
-    .nav-item:hover {
-        background-color: #1E90FF;
-        color: white !important;
-    }
-    .active {
-        background-color: #87CEFA;
-        color: #002B5B !important;
-    }
-    .hero {
-        background-color: #E6F2FF;
-        text-align: center;
-        padding: 2rem;
-        border-radius: 10px;
-        margin-top: 20px;
-    }
-    .hero h1 {
-        color: #003366;
-        font-size: 36px;
-        margin-bottom: 0.5rem;
-    }
-    .hero p {
-        color: #003366;
-        font-size: 18px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ====================
-# SIDEBAR
-# ====================
-st.sidebar.title("🔧 Menu Preprocessing")
-uploaded_file = st.sidebar.file_uploader("📂 Upload CSV", type="csv")
-
-run_preprocessing = False
-if uploaded_file:
-    st.sidebar.success("✅ File berhasil diunggah")
-    run_preprocessing = st.sidebar.button("🚀 Jalankan Preprocessing")
-
-# ====================
-# NAVIGATION BAR
-# ====================
-page = st.session_state.page
-st.markdown(f"""
-<div class="navbar">
-    <a href="/?page=home" class="nav-item {'active' if page == 'home' else ''}">🏠 Home</a>
-    <a href="/?page=about" class="nav-item {'active' if page == 'about' else ''}">📋 About</a>
-    <a href="/?page=rules" class="nav-item {'active' if page == 'rules' else ''}">📜 Rules</a>
-</div>
-""", unsafe_allow_html=True)
-
-# ====================
-# HOME PAGE
-# ====================
-if page == "home":
-    st.markdown("""
-    <div class="hero">
-        <h1>Ensemble Clustering Using Links (ROCK)</h1>
-        <p>Please read the About & Rules menu first.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+# ========== MENU 1: UPLOAD ==========
+if menu == "Upload Data":
+    st.title("📂 Upload Dataset UMKM")
+    uploaded_file = st.file_uploader("Upload CSV", type="csv")
+    
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
-
-        st.subheader("📄 Preview Data")
-        st.write("📌 Kolom terbaca:", df.columns.tolist())
+        st.session_state.df = df
+        st.success("✅ File berhasil diunggah!")
         st.dataframe(df)
 
-        if run_preprocessing:
-            try:
-                # Bersihkan kolom kategorikal
-                if 'jenis' in df.columns:
-                    df['jenis'] = df['jenis'].astype(str).str.strip().str.lower()
-                if 'ojol' in df.columns:
-                    df['ojol'] = df['ojol'].astype(str).str.strip().str.lower()
+# ========== MENU 2: PREPROCESSING ==========
+elif menu == "Data Preprocessing":
+    st.title("⚙️ Data Preprocessing")
+    if st.session_state.df is None:
+        st.warning("⚠️ Silakan upload data terlebih dahulu.")
+    else:
+        df = st.session_state.df.copy()
+        st.subheader("1. Membersihkan Data Kategorikal")
+        df['jenis'] = df['jenis'].str.strip().str.lower()
+        df['ojol'] = df['ojol'].str.strip().str.lower()
 
-                # Distribusi kategori
-                if 'jenis' in df.columns:
-                    st.subheader("📊 Distribusi Kategori: jenis")
-                    fig1, ax1 = plt.subplots()
-                    sns.countplot(data=df, x='jenis', ax=ax1)
-                    ax1.set_title("Distribusi Kategori: jenis")
-                    st.pyplot(fig1)
+        st.subheader("2. Distribusi Kategori")
+        col1, col2 = st.columns(2)
+        with col1:
+            fig1, ax1 = plt.subplots()
+            sns.countplot(data=df, x='jenis', ax=ax1)
+            ax1.set_title("Distribusi 'jenis'")
+            st.pyplot(fig1)
+        with col2:
+            fig2, ax2 = plt.subplots()
+            sns.countplot(data=df, x='ojol', ax=ax2)
+            ax2.set_title("Distribusi 'ojol'")
+            st.pyplot(fig2)
 
-                if 'ojol' in df.columns:
-                    st.subheader("📊 Distribusi Kategori: ojol")
-                    fig2, ax2 = plt.subplots()
-                    sns.countplot(data=df, x='ojol', ax=ax2)
-                    ax2.set_title("Distribusi Kategori: ojol")
-                    st.pyplot(fig2)
+        st.subheader("3. Info Dataset & Statistik")
+        buffer = io.StringIO()
+        df.info(buf=buffer)
+        st.text(buffer.getvalue())
+        st.dataframe(df[['omset', 'tenaga_kerja', 'modal']].describe())
+        st.write("Missing Values:")
+        st.dataframe(df.isnull().sum())
 
-                st.subheader("ℹ️ Info Dataset")
-                buffer = io.StringIO()
-                df.info(buf=buffer)
-                st.text(buffer.getvalue())
+        st.subheader("4. Boxplot Sebelum Penanganan Outlier")
+        fig3, ax3 = plt.subplots()
+        sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax3)
+        st.pyplot(fig3)
 
-                st.subheader("📈 Statistik Deskriptif (Numerik)")
-                num_cols = [col for col in ['omset', 'tenaga_kerja', 'modal'] if col in df.columns]
-                if not num_cols:
-                    st.warning("⚠️ Kolom numerik tidak ditemukan.")
-                else:
-                    st.dataframe(df[num_cols].describe())
+        # Tangani outlier
+        for col in ['omset', 'modal']:
+            Q1 = df[col].quantile(0.25)
+            Q3 = df[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            df[col] = df[col].clip(lower=lower_bound, upper=upper_bound)
 
-                    st.subheader("📦 Boxplot Sebelum Penanganan Outlier")
-                    fig3, ax3 = plt.subplots(figsize=(10, 6))
-                    sns.boxplot(data=df[num_cols], ax=ax3)
-                    ax3.set_title('Boxplot Sebelum Penanganan Outlier')
-                    st.pyplot(fig3)
+        st.subheader("5. Boxplot Setelah Penanganan Outlier")
+        fig4, ax4 = plt.subplots()
+        sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax4)
+        st.pyplot(fig4)
 
-                    # Outlier handling
-                    for col in ['omset', 'modal']:
-                        if col in df.columns:
-                            Q1 = df[col].quantile(0.25)
-                            Q3 = df[col].quantile(0.75)
-                            IQR = Q3 - Q1
-                            lower = Q1 - 1.5 * IQR
-                            upper = Q3 + 1.5 * IQR
-                            df[col] = df[col].clip(lower=lower, upper=upper)
+        st.subheader("6. Normalisasi Z-Score")
+        df_zscore = df.copy()
+        for col in ['omset', 'tenaga_kerja', 'modal']:
+            df_zscore[col] = zscore(df[col])
+        st.session_state.df_zscore = df_zscore
+        st.dataframe(df_zscore[['omset', 'tenaga_kerja', 'modal']].head())
 
-                    st.subheader("📦 Boxplot Setelah Penanganan Outlier")
-                    fig4, ax4 = plt.subplots(figsize=(10, 6))
-                    sns.boxplot(data=df[num_cols], ax=ax4)
-                    ax4.set_title('Boxplot Setelah Penanganan Outlier')
-                    st.pyplot(fig4)
+# ========== MENU 3: CLUSTERING NUMERIK ==========
+elif menu == "Clustering Numerik":
+    st.title("📊 Clustering Numerik")
+    st.info("Fitur clustering numerik akan dikembangkan...")
 
-                    # Normalisasi Z-Score
-                    st.subheader("📐 Data Setelah Normalisasi Z-Score")
-                    df_zscore = df.copy()
-                    df_zscore[num_cols] = df_zscore[num_cols].apply(zscore)
-                    st.dataframe(df_zscore[num_cols].head())
+# ========== MENU 4: CLUSTERING KATEGORIK ==========
+elif menu == "Clustering Kategorik":
+    st.title("🧮 Clustering Kategorik")
+    st.info("Fitur clustering kategorik akan dikembangkan...")
 
-            except Exception as e:
-                st.error(f"❌ Terjadi error saat preprocessing: {e}")
-
-# ====================
-# ABOUT PAGE
-# ====================
-elif page == "about":
-    st.subheader("📋 Tentang Aplikasi")
-    st.markdown("""
-    Aplikasi ini dirancang untuk mengelompokkan UMKM berdasarkan karakteristik usaha seperti jenis, modal, omset, dan tenaga kerja.  
-    Dengan metode **Agglomerative Hierarchical Clustering** dan **Robust Clustering using Links (Ensemble ROCK)**, aplikasi ini membantu pemerintah dalam merumuskan kebijakan yang tepat sasaran sehingga UMKM dapat berkembang dan sejahtera.
-    """)
-
-# ====================
-# RULES PAGE
-# ====================
-elif page == "rules":
-    st.subheader("📜 Hal yang Perlu Diperhatikan")
-    st.markdown("""
-    File yang diunggah harus berformat **`.csv`** dan maksimal **200MB**.
-
-    **Data harus memiliki kolom berikut:**
-    - `modal`, `omset`, `tenaga_kerja`: isi dengan **angka bulat** tanpa titik atau koma.
-    - `ojol`: isi dengan **"Ya"** atau **"Tidak"**.
-    - `jenis`: isi dengan **"mamin"** (makanan/minuman) atau **"oleh"** (oleh-oleh).
-    """)
+# ========== MENU 5: ENSEMBLE CLUSTERING ==========
+elif menu == "Clustering Ensemble":
+    st.title("🔗 Clustering Ensemble (ROCK)")
+    st.info("Fitur ensemble clustering akan dikembangkan...")
