@@ -150,6 +150,8 @@ elif menu == "📊 Clustering Numerik":
         st.warning("⚠️ Data belum tersedia. Lakukan preprocessing terlebih dahulu.")
     else:
         # Clustering AHC + Validasi
+        st.subheader("🔎 Validasi Clustering (Pseudo-F dan ICD Rate)")
+
         X = df_zscore[['omset', 'tenaga kerja', 'modal']]
         X_scaled = StandardScaler().fit_transform(X)
 
@@ -158,10 +160,9 @@ elif menu == "📊 Clustering Numerik":
 
         linkage_types = ['single', 'complete', 'average']
         best_result = {'k': None, 'link': None, 'PseudoF': -np.inf, 'ICD': np.inf}
+        results = []
 
-        print("\n=== Validasi Clustering Berdasarkan Pseudo-F dan ICD Rate ===")
         for link in linkage_types:
-            print(f"\n>>> LINKAGE: {link.upper()}")
             for k in range(2, 7):
                 model = AgglomerativeClustering(n_clusters=k, linkage=link)
                 labels = model.fit_predict(X_scaled)
@@ -176,17 +177,24 @@ elif menu == "📊 Clustering Numerik":
 
                 pseudoF = (SB / (k - 1)) / (SW / (n - k)) if SW != 0 else np.inf
                 ICD = SW / n
-
-                print(f"  K={k} → Pseudo-F: {pseudoF:.4f}, ICD rate: {ICD:.4f}")
+                results.append((link, k, pseudoF, ICD))
 
                 if pseudoF > best_result['PseudoF']:
                     best_result = {'k': k, 'link': link, 'PseudoF': pseudoF, 'ICD': ICD}
 
-        print("\n=== HASIL AKHIR CLUSTERING TERBAIK ===")
-        print(f"Jumlah klaster optimum : {best_result['k']}")
-        print(f"Metode linkage terbaik : {best_result['link'].upper()}")
-        print(f"Nilai Pseudo-F tertinggi: {best_result['PseudoF']:.4f}")
-        print(f"Nilai ICD terkecil      : {best_result['ICD']:.4f}")
+        # Tampilkan hasil validasi semua kombinasi
+        result_df = pd.DataFrame(results, columns=['Linkage', 'K', 'Pseudo-F', 'ICD'])
+        st.dataframe(result_df.style.format({'Pseudo-F': '{:.4f}', 'ICD': '{:.4f}'}))
+
+        # Tampilkan hasil terbaik
+        st.subheader("🏆 Hasil Clustering Terbaik")
+        st.markdown(f"""
+        - Jumlah klaster optimum: **{best_result['k']}**
+        - Metode linkage terbaik: **{best_result['link'].capitalize()}**
+        - Nilai Pseudo-F tertinggi: **{best_result['PseudoF']:.4f}**
+        - Nilai ICD terkecil: **{best_result['ICD']:.4f}**
+        """)
+
 
 # ================= CLUSTERING KATEGORIK =================
 elif menu == "🧮 Clustering Kategorik":
