@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import zscore
 import io
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 # Konfigurasi halaman
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
@@ -29,7 +32,7 @@ if "df_zscore" not in st.session_state:
 if menu == "🏠 Home":
     st.title("📘 Selamat Datang di Aplikasi Clustering UMKM")
     tab1, tab2 = st.tabs(["📋 About", "📜 Rules"])
-    
+
     with tab1:
         st.markdown("""
         ### Tentang Aplikasi
@@ -39,7 +42,7 @@ if menu == "🏠 Home":
 
         Aplikasi membantu analisis dan pemetaan kelompok usaha berdasarkan karakteristik numerik dan kategorikal.
         """)
-    
+
     with tab2:
         st.markdown("""
         ### Aturan Penggunaan
@@ -141,8 +144,49 @@ elif menu == "⚙️ Data Preprocessing":
 # ================= CLUSTERING NUMERIK =================
 elif menu == "📊 Clustering Numerik":
     st.title("📊 Clustering Data Numerik")
-    st.info("💡 Akan dilakukan clustering terhadap `modal`, `omset`, dan `tenaga_kerja`.")
-    st.warning("Fitur ini akan dikembangkan setelah preprocessing selesai.")
+    st.info("💡 Akan dilakukan clustering terhadap `modal`, `omset`, dan `tenaga kerja`.")
+    df_zscore = st.session_state.df_zscore
+    if df_zscore is None:
+        st.warning("⚠️ Data belum tersedia. Lakukan preprocessing terlebih dahulu.")
+    else:
+        # Clustering AHC + Validasi
+        X = df_zscore[['omset', 'tenaga kerja', 'modal']]
+        X_scaled = StandardScaler().fit_transform(X)
+
+        n = len(X_scaled)
+        global_mean = np.mean(X_scaled, axis=0)
+
+        linkage_types = ['single', 'complete', 'average']
+        best_result = {'k': None, 'link': None, 'PseudoF': -np.inf, 'ICD': np.inf}
+
+        print("\n=== Validasi Clustering Berdasarkan Pseudo-F dan ICD Rate ===")
+        for link in linkage_types:
+            print(f"\n>>> LINKAGE: {link.upper()}")
+            for k in range(2, 7):
+                model = AgglomerativeClustering(n_clusters=k, linkage=link)
+                labels = model.fit_predict(X_scaled)
+
+                SW = 0
+                SB = 0
+                for cl in np.unique(labels):
+                    cluster_data = X_scaled[labels == cl]
+                    mean_cl = np.mean(cluster_data, axis=0)
+                    SW += np.sum((cluster_data - mean_cl) ** 2)
+                    SB += len(cluster_data) * np.sum((mean_cl - global_mean) ** 2)
+
+                pseudoF = (SB / (k - 1)) / (SW / (n - k)) if SW != 0 else np.inf
+                ICD = SW / n
+
+                print(f"  K={k} → Pseudo-F: {pseudoF:.4f}, ICD rate: {ICD:.4f}")
+
+                if pseudoF > best_result['PseudoF']:
+                    best_result = {'k': k, 'link': link, 'PseudoF': pseudoF, 'ICD': ICD}
+
+        print("\n=== HASIL AKHIR CLUSTERING TERBAIK ===")
+        print(f"Jumlah klaster optimum : {best_result['k']}")
+        print(f"Metode linkage terbaik : {best_result['link'].upper()}")
+        print(f"Nilai Pseudo-F tertinggi: {best_result['PseudoF']:.4f}")
+        print(f"Nilai ICD terkecil      : {best_result['ICD']:.4f}")
 
 # ================= CLUSTERING KATEGORIK =================
 elif menu == "🧮 Clustering Kategorik":
