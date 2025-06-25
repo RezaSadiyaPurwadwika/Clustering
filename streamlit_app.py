@@ -94,7 +94,7 @@ elif menu == "⚙️ Data Preprocessing":
             print("Info Dataset:")
             print(df.info())
 
-            cols_num = ['omset', 'tenaga_kerja', 'modal']
+            cols_num = ['omset', 'tenaga kerja', 'modal']
             cols_ada = [col for col in cols_num if col in df.columns]
             if cols_ada:
                 st.dataframe(df[cols_ada].describe())
@@ -114,7 +114,7 @@ elif menu == "⚙️ Data Preprocessing":
                 sns.boxplot(data=df[cols_ada], ax=ax3)
                 st.pyplot(fig3)
 
-                for col in ['omset', 'modal']:
+                for col in ['omset', 'tenaga kerja', 'modal']:
                     if col in df.columns:
                         Q1 = df[col].quantile(0.25)
                         Q3 = df[col].quantile(0.75)
