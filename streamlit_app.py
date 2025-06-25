@@ -2,11 +2,16 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.stats import zscore
-import io
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler
 import numpy as np
+import io
+
+from scipy.stats import zscore
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler, LabelEncoder  # ⬅️ Tambahkan LabelEncoder di sini
+from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import squareform
+from scipy.cluster.hierarchy import linkage, fcluster
+from itertools import combinations
 
 # Konfigurasi halaman
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
