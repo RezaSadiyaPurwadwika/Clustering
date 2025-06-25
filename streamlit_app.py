@@ -196,47 +196,54 @@ elif menu == "📊 Clustering Numerik":
         - Nilai ICD terkecil: **{best_result['ICD']:.4f}**
         """)
 
-        # ========== Visualisasi hasil clustering ==========
-        st.subheader("🎨 Visualisasi Clustering")
+# ========== Visualisasi hasil clustering ==========
+st.subheader("🎨 Visualisasi Clustering")
 
-        # 1. Clustering dengan parameter terbaik
-        best_model = AgglomerativeClustering(n_clusters=best_result['k'], linkage=best_result['link'])
-        best_labels = best_model.fit_predict(X_scaled)
+try:
+    # 1. Clustering dengan parameter terbaik
+    best_model = AgglomerativeClustering(n_clusters=best_result['k'], linkage=best_result['link'])
+    best_labels = best_model.fit_predict(X_scaled)
 
-        # Simpan ke dataframe
-        df['cluster_numerik'] = best_labels
-        st.session_state.df = df  # Simpan kembali ke session_state
+    # Simpan ke dataframe
+    df['cluster_numerik'] = best_labels
+    st.session_state.df = df  # Simpan kembali ke session_state
 
-        # 2. Reduksi dimensi dengan t-SNE
-        from sklearn.manifold import TSNE
-        tsne = TSNE(n_components=2, random_state=42)
-        X_reduced = tsne.fit_transform(X_scaled)
+    # 2. Reduksi dimensi dengan t-SNE
+    tsne = TSNE(n_components=2, random_state=42, perplexity=5)  # tambahkan perplexity agar lebih stabil
+    X_reduced = tsne.fit_transform(X_scaled)
 
-        # 3. Plot t-SNE
-        fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
-        for cl in np.unique(best_labels):
-            ax_tsne.scatter(
-                X_reduced[best_labels == cl, 0],
-                X_reduced[best_labels == cl, 1],
-                label=f'Cluster {cl+1}'
-            )
-        ax_tsne.set_title(f't-SNE Clustering\nLinkage={best_result["link"].upper()}, k={best_result["k"]}')
-        ax_tsne.set_xlabel('t-SNE 1')
-        ax_tsne.set_ylabel('t-SNE 2')
-        ax_tsne.legend()
-        ax_tsne.grid(True)
-        st.pyplot(fig_tsne)
+    # 3. Plot t-SNE
+    st.subheader("🔸 Visualisasi t-SNE")
+    fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
+    for cl in np.unique(best_labels):
+        ax_tsne.scatter(
+            X_reduced[best_labels == cl, 0],
+            X_reduced[best_labels == cl, 1],
+            label=f'Cluster {cl+1}'
+        )
+    ax_tsne.set_title(f't-SNE Clustering\nLinkage={best_result["link"].upper()}, k={best_result["k"]}')
+    ax_tsne.set_xlabel('t-SNE 1')
+    ax_tsne.set_ylabel('t-SNE 2')
+    ax_tsne.legend()
+    ax_tsne.grid(True)
+    st.pyplot(fig_tsne)
 
-        # 4. Plot dendrogram
-        st.subheader("🧬 Dendrogram Hierarki")
-        from scipy.cluster.hierarchy import dendrogram, linkage
-        linked = linkage(X_scaled, method=best_result['link'])
-        fig_dendro, ax_dendro = plt.subplots(figsize=(10, 6))
-        dendrogram(linked, ax=ax_dendro, orientation='top', distance_sort='descending', show_leaf_counts=False)
-        ax_dendro.set_title(f'Dendrogram Linkage={best_result["link"].upper()}')
-        ax_dendro.set_xlabel('Data')
-        ax_dendro.set_ylabel('Jarak (Distance)')
-        st.pyplot(fig_dendro)
+except Exception as e:
+    st.error(f"❌ Gagal membuat visualisasi t-SNE: {e}")
+
+# 4. Plot dendrogram
+st.subheader("🧬 Dendrogram Hierarki")
+try:
+    linked = linkage(X_scaled, method=best_result['link'])
+    fig_dendro, ax_dendro = plt.subplots(figsize=(10, 6))
+    dendrogram(linked, ax=ax_dendro, orientation='top', distance_sort='descending', show_leaf_counts=False)
+    ax_dendro.set_title(f'Dendrogram Linkage={best_result["link"].upper()}')
+    ax_dendro.set_xlabel('Data')
+    ax_dendro.set_ylabel('Jarak (Distance)')
+    st.pyplot(fig_dendro)
+except Exception as e:
+    st.error(f"❌ Gagal membuat dendrogram: {e}")
+
 
 # ================= CLUSTERING KATEGORIK =================
 elif menu == "🧮 Clustering Kategorik":
