@@ -5,42 +5,71 @@ import seaborn as sns
 from scipy.stats import zscore
 import io
 
+# Konfigurasi layout
 st.set_page_config(page_title="Clustering App", layout="wide")
 
-# Sidebar dengan menu navigasi
-menu = st.sidebar.radio("🔧 Menu Navigasi", [
-    "Upload Data",
-    "Data Preprocessing",
-    "Clustering Numerik",
-    "Clustering Kategorik",
-    "Clustering Ensemble"
+# Sidebar Menu
+st.sidebar.title("🧭 Menu Navigasi")
+menu = st.sidebar.radio("Pilih halaman:", [
+    "🏠 Home",
+    "📂 Upload Data",
+    "⚙️ Data Preprocessing",
+    "📊 Clustering Numerik",
+    "🧮 Clustering Kategorik",
+    "🔗 Clustering Ensemble"
 ])
 
-# Global storage
+# Inisialisasi variabel global
 if "df" not in st.session_state:
     st.session_state.df = None
 if "df_zscore" not in st.session_state:
     st.session_state.df_zscore = None
 
-# ========== MENU 1: UPLOAD ==========
-if menu == "Upload Data":
-    st.title("📂 Upload Dataset UMKM")
-    uploaded_file = st.file_uploader("Upload CSV", type="csv")
+# ================= HOME =================
+if menu == "🏠 Home":
+    st.title("📘 Selamat Datang di Aplikasi Clustering UMKM")
     
+    tab1, tab2 = st.tabs(["📋 About", "📜 Rules"])
+    
+    with tab1:
+        st.markdown("""
+        ### Tentang Aplikasi
+        Aplikasi ini dirancang untuk mengelompokkan data UMKM di Kabupaten Malang menggunakan metode:
+        - Agglomerative Hierarchical Clustering (AHC)
+        - Robust Clustering using Links (Ensemble ROCK)
+        
+        Aplikasi ini membantu analisis dan pemetaan kelompok usaha berdasarkan karakteristik numerik dan kategorikal.
+        """)
+    
+    with tab2:
+        st.markdown("""
+        ### Aturan Penggunaan
+        **Format data CSV wajib memuat kolom berikut:**
+        - `modal`, `omset`, `tenaga_kerja`: berupa **angka bulat** tanpa titik/koma.
+        - `ojol`: hanya berisi nilai `"ya"` atau `"tidak"`.
+        - `jenis`: hanya berisi nilai `"mamin"` (makanan/minuman) atau `"oleh"` (oleh-oleh).
+        
+        **Ukuran file maksimal:** 200MB
+        """)
+
+# ================= UPLOAD =================
+elif menu == "📂 Upload Data":
+    st.title("📂 Upload Dataset UMKM")
+    uploaded_file = st.file_uploader("Unggah file CSV", type="csv")
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.session_state.df = df
         st.success("✅ File berhasil diunggah!")
         st.dataframe(df)
 
-# ========== MENU 2: PREPROCESSING ==========
-elif menu == "Data Preprocessing":
-    st.title("⚙️ Data Preprocessing")
+# ================= PREPROCESSING =================
+elif menu == "⚙️ Data Preprocessing":
+    st.title("⚙️ Tahap Preprocessing Data")
     if st.session_state.df is None:
-        st.warning("⚠️ Silakan upload data terlebih dahulu.")
+        st.warning("⚠️ Silakan unggah data terlebih dahulu di menu 'Upload Data'.")
     else:
         df = st.session_state.df.copy()
-        st.subheader("1. Membersihkan Data Kategorikal")
+        st.subheader("1. Pembersihan Data Kategorikal")
         df['jenis'] = df['jenis'].str.strip().str.lower()
         df['ojol'] = df['ojol'].str.strip().str.lower()
 
@@ -61,47 +90,51 @@ elif menu == "Data Preprocessing":
         buffer = io.StringIO()
         df.info(buf=buffer)
         st.text(buffer.getvalue())
+
         st.dataframe(df[['omset', 'tenaga_kerja', 'modal']].describe())
-        st.write("Missing Values:")
+
+        st.subheader("4. Missing Values")
         st.dataframe(df.isnull().sum())
 
-        st.subheader("4. Boxplot Sebelum Penanganan Outlier")
+        st.subheader("5. Boxplot Sebelum Penanganan Outlier")
         fig3, ax3 = plt.subplots()
         sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax3)
         st.pyplot(fig3)
 
-        # Tangani outlier
         for col in ['omset', 'modal']:
             Q1 = df[col].quantile(0.25)
             Q3 = df[col].quantile(0.75)
             IQR = Q3 - Q1
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-            df[col] = df[col].clip(lower=lower_bound, upper=upper_bound)
+            lower = Q1 - 1.5 * IQR
+            upper = Q3 + 1.5 * IQR
+            df[col] = df[col].clip(lower=lower, upper=upper)
 
-        st.subheader("5. Boxplot Setelah Penanganan Outlier")
+        st.subheader("6. Boxplot Setelah Penanganan Outlier")
         fig4, ax4 = plt.subplots()
         sns.boxplot(data=df[['omset', 'tenaga_kerja', 'modal']], ax=ax4)
         st.pyplot(fig4)
 
-        st.subheader("6. Normalisasi Z-Score")
+        st.subheader("7. Normalisasi Z-Score")
         df_zscore = df.copy()
-        for col in ['omset', 'tenaga_kerja', 'modal']:
-            df_zscore[col] = zscore(df[col])
+        df_zscore[['omset', 'tenaga_kerja', 'modal']] = df_zscore[['omset', 'tenaga_kerja', 'modal']].apply(zscore)
         st.session_state.df_zscore = df_zscore
-        st.dataframe(df_zscore[['omset', 'tenaga_kerja', 'modal']].head())
+        st.dataframe(df_zscore.head())
 
-# ========== MENU 3: CLUSTERING NUMERIK ==========
-elif menu == "Clustering Numerik":
-    st.title("📊 Clustering Numerik")
-    st.info("Fitur clustering numerik akan dikembangkan...")
+# ================= CLUSTERING NUMERIK =================
+elif menu == "📊 Clustering Numerik":
+    st.title("📊 Clustering Data Numerik")
+    st.info("💡 Fitur ini akan memproses clustering berdasarkan nilai `omset`, `tenaga_kerja`, dan `modal`.")
+    st.warning("Fitur ini akan diisi setelah preprocessing dan implementasi algoritma clustering.")
 
-# ========== MENU 4: CLUSTERING KATEGORIK ==========
-elif menu == "Clustering Kategorik":
-    st.title("🧮 Clustering Kategorik")
-    st.info("Fitur clustering kategorik akan dikembangkan...")
+# ================= CLUSTERING KATEGORIK =================
+elif menu == "🧮 Clustering Kategorik":
+    st.title("🧮 Clustering Data Kategorik")
+    st.info("💡 Fitur ini akan mengelompokkan data berdasarkan `jenis` dan `ojol`.")
+    st.warning("Fitur sedang dalam pengembangan.")
 
-# ========== MENU 5: ENSEMBLE CLUSTERING ==========
-elif menu == "Clustering Ensemble":
+# ================= CLUSTERING ENSEMBLE =================
+elif menu == "🔗 Clustering Ensemble":
     st.title("🔗 Clustering Ensemble (ROCK)")
-    st.info("Fitur ensemble clustering akan dikembangkan...")
+    st.info("💡 Clustering Ensemble menggabungkan hasil numerik dan kategorik menggunakan pendekatan ROCK.")
+    st.warning("Fitur sedang dalam pengembangan.")
+
