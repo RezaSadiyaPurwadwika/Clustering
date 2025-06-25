@@ -203,7 +203,105 @@ elif menu == "📊 Clustering Numerik":
 # =============== CLUSTERING KATEGORIK ===============
 elif menu == "🧮 Clustering Kategorik":
     st.title("🧮 Clustering Data Kategorik")
-    st.warning("Fitur ini sedang dalam pengembangan.")
+    df = st.session_state.df
+
+    if df is None:
+        st.warning("⚠️ Silakan unggah dan preprocessing data terlebih dahulu.")
+    else:
+        try:
+            st.subheader("🔢 Clustering dengan ROCK (jenis & ojol)")
+
+            # 1. Fungsi bantu
+            def jaccard_similarity_matrix(encoded):
+                return 1 - pairwise_distances(encoded, metric="hamming")
+
+            def get_neighbors(sim_matrix, theta):
+                n = sim_matrix.shape[0]
+                neighbors = [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
+                return neighbors
+
+            def calculate_links(neighbors):
+                n = len(neighbors)
+                links = np.zeros((n, n), dtype=int)
+                for i, j in combinations(range(n), 2):
+                    common = neighbors[i].intersection(neighbors[j])
+                    links[i, j] = links[j, i] = len(common)
+                return links
+
+            def rock_clustering(df_cat, theta, k_opt):
+                encoded = pd.DataFrame()
+                for col in df_cat.columns:
+                    le = LabelEncoder()
+                    encoded[col] = le.fit_transform(df_cat[col])
+                sim_matrix = jaccard_similarity_matrix(encoded)
+                neighbors = get_neighbors(sim_matrix, theta)
+                links = calculate_links(neighbors)
+
+                dist = 1 / (links + 1e-5)
+                np.fill_diagonal(dist, 0)
+                condensed_dist = squareform(dist, checks=False)
+                linkage_matrix = linkage(condensed_dist, method='average')
+                labels = fcluster(linkage_matrix, t=k_opt, criterion='maxclust')
+                return labels, encoded
+
+            def compute_cp_star(encoded, labels):
+                sim_matrix = jaccard_similarity_matrix(encoded)
+                N = len(labels)
+                cp_total = 0
+                unique_labels = np.unique(labels)
+
+                for lbl in unique_labels:
+                    indices = np.where(labels == lbl)[0]
+                    n_k = len(indices)
+                    if n_k <= 1:
+                        continue
+                    sim_sum = 0
+                    for i, j in combinations(indices, 2):
+                        sim_sum += sim_matrix[i, j]
+                    sim_avg = sim_sum / (n_k * (n_k - 1) / 2)
+                    cp_total += n_k * sim_avg
+
+                cp_star = cp_total / N
+                return cp_star
+
+            # 2. Siapkan data kategorikal
+            df_cat = df[['ojol', 'jenis']].copy()
+            theta_list = [0.05, 0.1, 0.12, 0.15, 0.17, 0.2, 0.22, 0.25, 0.27, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+            k_range = range(2, 5)
+
+            best_cp = -np.inf
+            best_labels = None
+            best_theta = None
+            best_k = None
+
+            for theta in theta_list:
+                for k_opt in k_range:
+                    labels, encoded = rock_clustering(df_cat, theta, k_opt)
+                    cp_star = compute_cp_star(encoded, labels)
+                    if cp_star > best_cp:
+                        best_cp = cp_star
+                        best_labels = labels
+                        best_theta = theta
+                        best_k = k_opt
+
+            # 3. Simpan hasil ke dataframe
+            df['cluster_kategorik'] = best_labels
+            st.session_state.df = df
+
+            st.success(f"✅ Clustering selesai! Theta terbaik = {best_theta}, k = {best_k}, CP* = {best_cp:.4f}")
+            st.subheader("📋 Preview Hasil Clustering")
+            st.dataframe(df[['ojol', 'jenis', 'cluster_kategorik']])
+
+            st.subheader("📈 Distribusi Cluster")
+            fig, ax = plt.subplots()
+            sns.countplot(x=df['cluster_kategorik'], palette='viridis', ax=ax)
+            ax.set_title("Distribusi Hasil Clustering Kategorik (ROCK)")
+            ax.set_xlabel("Cluster")
+            ax.set_ylabel("Jumlah Data")
+            st.pyplot(fig)
+
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat melakukan clustering ROCK: {e}")
 
 # =============== CLUSTERING ENSEMBLE ===============
 elif menu == "🔗 Clustering Ensemble":
