@@ -516,3 +516,32 @@ elif menu == "📏 Evaluasi Clustering":
             """)
         except Exception as e:
             st.error(f"❌ Terjadi kesalahan saat menghitung DBI: {e}")
+
+# =============== INTERPRETASI CLUSTERING ENSEMBLE ===============
+elif menu == "🧾 Interpretasi Hasil":
+    st.title("🧾 Interpretasi Hasil Clustering Ensemble")
+
+    df = st.session_state.df
+    if df is None or 'cluster_ensemble_rock' not in df:
+        st.warning("⚠️ Pastikan hasil clustering ensemble sudah tersedia.")
+    else:
+        try:
+            st.subheader("📊 Statistik Deskriptif Numerik per Cluster")
+            profil_numerik = df.groupby('cluster_ensemble_rock')[['omset', 'tenaga kerja', 'modal']].agg(['mean', 'std', 'min', 'max', 'count'])
+            st.dataframe(profil_numerik)
+
+            st.markdown("---")
+            st.subheader("📋 Distribusi Variabel Kategorikal per Cluster")
+
+            # Distribusi Ojol
+            st.markdown("#### 🚗 Distribusi 'ojol' per Cluster")
+            ojol_dist = pd.crosstab(df['cluster_ensemble_rock'], df['ojol'])
+            st.dataframe(ojol_dist)
+
+            # Distribusi Jenis
+            st.markdown("#### 🍱 Distribusi 'jenis' per Cluster")
+            jenis_dist = pd.crosstab(df['cluster_ensemble_rock'], df['jenis'])
+            st.dataframe(jenis_dist)
+
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat menampilkan interpretasi hasil: {e}")
