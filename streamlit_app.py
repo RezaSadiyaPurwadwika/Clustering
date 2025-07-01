@@ -18,7 +18,7 @@ from sklearn.manifold import TSNE  # ⬅️ Diperlukan untuk t-SNE di ROCK
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
 
 # Sidebar Navigasi
-st.sidebar.title("🛍️ Menu Navigasi")
+st.sidebar.title("Menu Navigasi")
 menu = st.sidebar.radio("Pilih halaman:", [
     "🏠 Home",
     "📂 Upload Data",
