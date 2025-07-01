@@ -575,8 +575,8 @@ elif menu == "🧾 Interpretasi Hasil":
             st.markdown(f"- Cluster {cl}: **{dominant_jenis.upper()}** sebanyak {count} UMKM")
 
 # =============== UNDUH ===============
-elif menu == "📥 Unduh Hasil Clustering Ensemble":
-    st.title("📥 Unduh Hasil Clustering Ensemble")
+elif menu == "💾 Unduh Hasil Clustering Ensemble":
+    st.title("💾 Unduh Hasil Clustering Ensemble")
 
     df = st.session_state.df
 
