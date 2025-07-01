@@ -27,7 +27,7 @@ menu = st.sidebar.radio("Pilih halaman:", [
     "🧮 Clustering Kategorik",
     "🔗 Clustering Ensemble",
     "📏 Evaluasi Clustering",
-    "🧠 Interpretasi Hasil"
+    "Interpretasi Hasil"
 ])
 
 # Inisialisasi session state
