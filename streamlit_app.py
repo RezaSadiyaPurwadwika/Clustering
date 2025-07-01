@@ -518,6 +518,7 @@ elif menu == "📏 Evaluasi Clustering":
             st.error(f"❌ Terjadi kesalahan saat menghitung DBI: {e}")
 
 # =============== INTERPRETASI CLUSTERING ENSEMBLE ===============
+# =============== INTERPRETASI HASIL ===============
 elif menu == "🧾 Interpretasi Hasil":
     st.title("🧾 Interpretasi Hasil Clustering Ensemble")
 
