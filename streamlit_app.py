@@ -548,16 +548,28 @@ elif menu == "🧾 Interpretasi Hasil":
         except Exception as e:
             st.error(f"❌ Terjadi kesalahan saat menampilkan interpretasi: {e}")
 
+        st.subheader("📊 Dominasi Variabel Kategorikal per Cluster")
 
-            # Distribusi Ojol
-            st.markdown("#### 🚗 Distribusi 'ojol' per Cluster")
-            ojol_dist = pd.crosstab(df['cluster_ensemble_rock'], df['ojol'])
-            st.dataframe(ojol_dist)
+        # Distribusi Ojol per Cluster
+        st.markdown("#### 🚗 Distribusi *Ojol* per Cluster")
+        ojol_dist = pd.crosstab(df['cluster_ensemble_rock'], df['ojol'])
+        st.dataframe(ojol_dist)
 
-            # Distribusi Jenis
-            st.markdown("#### 🍱 Distribusi 'jenis' per Cluster")
-            jenis_dist = pd.crosstab(df['cluster_ensemble_rock'], df['jenis'])
-            st.dataframe(jenis_dist)
+        st.markdown("##### ✅ Dominasi Ojol Tiap Cluster:")
+        for cl in ojol_dist.index:
+            dominant_ojol = ojol_dist.loc[cl].idxmax()
+            count = ojol_dist.loc[cl].max()
+            st.markdown(f"- Cluster {cl}: **{dominant_ojol.upper()}** sebanyak {count} UMKM")
 
-        except Exception as e:
-            st.error(f"❌ Terjadi kesalahan saat menampilkan interpretasi hasil: {e}")
+        st.markdown("---")
+
+        # Distribusi Jenis per Cluster
+        st.markdown("#### 🏷️ Distribusi *Jenis* Produk per Cluster")
+        jenis_dist = pd.crosstab(df['cluster_ensemble_rock'], df['jenis'])
+        st.dataframe(jenis_dist)
+
+        st.markdown("##### ✅ Dominasi Jenis Tiap Cluster:")
+        for cl in jenis_dist.index:
+            dominant_jenis = jenis_dist.loc[cl].idxmax()
+            count = jenis_dist.loc[cl].max()
+            st.markdown(f"- Cluster {cl}: **{dominant_jenis.upper()}** sebanyak {count} UMKM")
