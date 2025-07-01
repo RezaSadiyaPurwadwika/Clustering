@@ -573,3 +573,26 @@ elif menu == "🧾 Interpretasi Hasil":
             dominant_jenis = jenis_dist.loc[cl].idxmax()
             count = jenis_dist.loc[cl].max()
             st.markdown(f"- Cluster {cl}: **{dominant_jenis.upper()}** sebanyak {count} UMKM")
+
+# =============== UNDUH ===============
+elif menu == "📥 Unduh Hasil Clustering Ensemble":
+    st.title("📥 Unduh Hasil Clustering Ensemble")
+
+    df = st.session_state.df
+
+    if df is None or 'cluster_ensemble_rock' not in df:
+        st.warning("⚠️ Data belum tersedia atau clustering ensemble belum dilakukan.")
+    else:
+        st.markdown("### 🔽 Tabel Hasil Clustering Ensemble")
+        st.dataframe(df)
+
+        # Simpan ke CSV dalam memori
+        csv = df.to_csv(index=False).encode('utf-8')
+
+        # Tombol Unduh
+        st.download_button(
+            label="📥 Unduh sebagai CSV",
+            data=csv,
+            file_name="hasil_clustering_ensemble.csv",
+            mime='text/csv'
+        )
