@@ -26,7 +26,7 @@ menu = st.sidebar.radio("Pilih halaman:", [
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
     "🔗 Clustering Ensemble",
-    "📏 Evaluasi Clustering",
+    "📏 Evaluasi Clustering Ensemble",
     "🧾 Interpretasi Hasil",
     "💾 Unduh Hasil Clustering Ensemble"
 ])
@@ -116,6 +116,7 @@ elif menu == "⚙️ Data Preprocessing":
             sns.boxplot(data=df[cols_num], ax=ax4)
             st.pyplot(fig4)
 
+            st.subheader("6. Normalisasi Data Z-Score")
             df_zscore = df.copy()
             df_zscore[cols_num] = df_zscore[cols_num].apply(zscore)
             st.session_state.df_zscore = df_zscore
@@ -125,7 +126,7 @@ elif menu == "⚙️ Data Preprocessing":
 
 # =============== CLUSTERING NUMERIK ===============
 elif menu == "📊 Clustering Numerik":
-    st.title("📊 Clustering Data Numerik")
+    st.title("📊 Clustering Data Numerik (AHC)")
     df_zscore = st.session_state.df_zscore
     df = st.session_state.df
     if df_zscore is None:
@@ -484,8 +485,8 @@ elif menu == "🔗 Clustering Ensemble":
             st.error(f"❌ Terjadi kesalahan saat ensemble clustering: {e}")
 
 # =============== EVALUASI CLUSTERING ENSEMBLE ===============
-elif menu == "📏 Evaluasi Clustering":
-    st.title("📏 Evaluasi Clustering")
+elif menu == "📏 Evaluasi Clustering Ensemble":
+    st.title("📏 Evaluasi Clustering Ensemble")
 
     df = st.session_state.df
     if df is None or 'cluster_ensemble_rock' not in df:
@@ -591,7 +592,7 @@ elif menu == "💾 Unduh Hasil Clustering Ensemble":
 
         # Tombol Unduh
         st.download_button(
-            label="📥 Unduh sebagai CSV",
+            label="💾 Unduh sebagai CSV",
             data=csv,
             file_name="hasil_clustering_ensemble.csv",
             mime='text/csv'
