@@ -518,7 +518,6 @@ elif menu == "📏 Evaluasi Clustering":
             st.error(f"❌ Terjadi kesalahan saat menghitung DBI: {e}")
 
 # =============== INTERPRETASI CLUSTERING ENSEMBLE ===============
-# =============== INTERPRETASI HASIL ===============
 elif menu == "🧾 Interpretasi Hasil":
     st.title("🧾 Interpretasi Hasil Clustering Ensemble")
 
@@ -527,12 +526,28 @@ elif menu == "🧾 Interpretasi Hasil":
         st.warning("⚠️ Pastikan hasil clustering ensemble sudah tersedia.")
     else:
         try:
-            st.subheader("📊 Statistik Deskriptif Numerik per Cluster")
-            profil_numerik = df.groupby('cluster_ensemble_rock')[['omset', 'tenaga kerja', 'modal']].agg(['mean', 'std', 'min', 'max', 'count'])
-            st.dataframe(profil_numerik)
+            st.subheader("📈 Rata-rata Omset, Tenaga Kerja, dan Modal per Cluster")
 
-            st.markdown("---")
-            st.subheader("📋 Distribusi Variabel Kategorikal per Cluster")
+            # Hitung rata-rata per cluster
+            mean_stats = df.groupby('cluster_ensemble_rock')[['omset', 'tenaga kerja', 'modal']].mean().round(2)
+            cluster_list = mean_stats.index.tolist()
+
+            for cl in cluster_list:
+                st.markdown(f"### 🧩 Cluster {cl}")
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    st.metric(label="💰 Rata-rata Omset", value=f"{mean_stats.loc[cl, 'omset']:,}")
+                with col2:
+                    st.metric(label="👷 Rata-rata Tenaga Kerja", value=f"{mean_stats.loc[cl, 'tenaga kerja']:,}")
+                with col3:
+                    st.metric(label="🏢 Rata-rata Modal", value=f"{mean_stats.loc[cl, 'modal']:,}")
+
+                st.markdown("---")
+
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat menampilkan interpretasi: {e}")
+
 
             # Distribusi Ojol
             st.markdown("#### 🚗 Distribusi 'ojol' per Cluster")
