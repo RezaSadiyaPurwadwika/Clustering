@@ -340,7 +340,6 @@ elif menu == "🧮 Clustering Kategorik":
             st.error(f"❌ Terjadi kesalahan saat melakukan clustering ROCK: {e}")
 
 # =============== CLUSTERING ENSEMBLE ===============
-# =============== CLUSTERING ENSEMBLE ===============
 elif menu == "🔗 Clustering Ensemble":
     st.title("🔗 Clustering Ensemble (ROCK)")
 
@@ -483,3 +482,37 @@ elif menu == "🔗 Clustering Ensemble":
 
         except Exception as e:
             st.error(f"❌ Terjadi kesalahan saat ensemble clustering: {e}")
+
+# =============== EVALUASI CLUSTERING ENSEMBLE ===============
+elif menu == "📏 Evaluasi Clustering":
+    st.title("📏 Evaluasi Clustering")
+
+    df = st.session_state.df
+    if df is None or 'cluster_ensemble_rock' not in df:
+        st.warning("⚠️ Pastikan Anda telah menyelesaikan proses Clustering Ensemble terlebih dahulu.")
+    else:
+        try:
+            st.subheader("📌 Davies-Bouldin Index (DBI)")
+
+            from sklearn.metrics import davies_bouldin_score
+
+            # Gunakan kembali encoded_ensemble untuk hitung Jaccard similarity dan distance matrix
+            from sklearn.preprocessing import OneHotEncoder
+            encoded_ensemble = OneHotEncoder(sparse_output=False).fit_transform(
+                df[['cluster_numerik', 'cluster_kategorik']].astype(str)
+            )
+            sim_matrix = 1 - pairwise_distances(pd.DataFrame(encoded_ensemble), metric="hamming")
+            dist_matrix = 1 - sim_matrix
+
+            # Gunakan best_labels dari clustering ensemble
+            labels = df['cluster_ensemble_rock'].values
+            db_index = davies_bouldin_score(dist_matrix, labels)
+
+            st.success(f"✔️ Nilai Davies-Bouldin Index (DBI): **{db_index:.4f}**")
+            st.markdown("""
+            **Interpretasi:**
+            - DBI yang lebih rendah menandakan cluster yang lebih baik (semakin kecil semakin baik).
+            - Nilai DBI < 1 umumnya dianggap baik dalam praktik clustering.
+            """)
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat menghitung DBI: {e}")
