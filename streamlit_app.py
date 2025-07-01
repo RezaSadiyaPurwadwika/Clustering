@@ -337,6 +337,7 @@ elif menu == "🧮 Clustering Kategorik":
             st.error(f"❌ Terjadi kesalahan saat melakukan clustering ROCK: {e}")
 
 # =============== CLUSTERING ENSEMBLE ===============
+# =============== CLUSTERING ENSEMBLE ===============
 elif menu == "🔗 Clustering Ensemble":
     st.title("🔗 Clustering Ensemble (ROCK)")
 
@@ -347,6 +348,7 @@ elif menu == "🔗 Clustering Ensemble":
     else:
         try:
             from sklearn.preprocessing import OneHotEncoder
+            from sklearn.manifold import TSNE
 
             st.subheader("⚙️ Proses Ensemble Clustering")
 
@@ -380,7 +382,7 @@ elif menu == "🔗 Clustering Ensemble":
                 neighbors = get_neighbors(sim_matrix, theta)
                 links = calculate_links(neighbors)
 
-                dist = 1 / (links + 1e-5)  # hindari pembagian dengan nol
+                dist = 1 / (links + 1e-5)
                 np.fill_diagonal(dist, 0)
                 condensed_dist = squareform(dist, checks=False)
 
@@ -398,20 +400,17 @@ elif menu == "🔗 Clustering Ensemble":
                     indices = np.where(labels == lbl)[0]
                     n_k = len(indices)
                     if n_k <= 1:
-                        continue  # abaikan cluster kecil
+                        continue
                     sim_sum = sum(sim_matrix[i, j] for i, j in combinations(indices, 2))
                     sim_avg = sim_sum / (n_k * (n_k - 1) / 2)
                     cp_total += n_k * sim_avg
 
-                cp_star = cp_total / N
-                return cp_star
+                return cp_total / N
 
             # ===============================
-            # ENSEMBLE CLUSTERING PROCESS
+            # PROSES CLUSTERING ENSEMBLE
             # ===============================
-            st.info("🔄 Menggabungkan label hasil clustering numerik & kategorik...")
             df_ensemble_input = df[['cluster_numerik', 'cluster_kategorik']].astype(str)
-
             encoder = OneHotEncoder(sparse_output=False)
             encoded_ensemble = encoder.fit_transform(df_ensemble_input)
 
@@ -439,7 +438,6 @@ elif menu == "🔗 Clustering Ensemble":
                     loop_count += 1
                     progress.progress(loop_count / total_loop)
 
-            # Simpan hasil terbaik
             df['cluster_ensemble_rock'] = best_labels
             st.session_state.df = df
 
@@ -447,13 +445,38 @@ elif menu == "🔗 Clustering Ensemble":
             st.subheader("📋 Hasil Clustering Ensemble")
             st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
 
-            st.subheader("📈 Distribusi Hasil Ensemble")
+            st.subheader("📈 Distribusi Cluster Ensemble")
             fig, ax = plt.subplots()
             sns.countplot(x=df['cluster_ensemble_rock'], palette='magma', ax=ax)
             ax.set_title("Distribusi Cluster Ensemble (ROCK)")
             ax.set_xlabel("Cluster")
             ax.set_ylabel("Jumlah Data")
             st.pyplot(fig)
+
+            # ===============================
+            # t-SNE Visualisasi Hasil Ensemble
+            # ===============================
+            st.subheader("🔍 Visualisasi t-SNE Hasil Ensemble")
+
+            sim_matrix = jaccard_similarity_matrix(pd.DataFrame(encoded_ensemble))
+            dist_matrix = 1 - sim_matrix
+
+            tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+            X_tsne = tsne.fit_transform(dist_matrix)
+
+            fig_tsne = plt.figure(figsize=(8, 6))
+            for cl in np.unique(best_labels):
+                plt.scatter(
+                    X_tsne[np.array(best_labels) == cl, 0],
+                    X_tsne[np.array(best_labels) == cl, 1],
+                    label=f'Cluster {cl}'
+                )
+            plt.title(f'Visualisasi ROCK Clustering Ensemble\nTheta={best_theta}, k={best_k}, CP*={best_cp:.4f}')
+            plt.xlabel('t-SNE 1')
+            plt.ylabel('t-SNE 2')
+            plt.legend()
+            plt.grid(True)
+            st.pyplot(fig_tsne)
 
         except Exception as e:
             st.error(f"❌ Terjadi kesalahan saat ensemble clustering: {e}")
