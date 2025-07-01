@@ -339,4 +339,121 @@ elif menu == "🧮 Clustering Kategorik":
 # =============== CLUSTERING ENSEMBLE ===============
 elif menu == "🔗 Clustering Ensemble":
     st.title("🔗 Clustering Ensemble (ROCK)")
-    st.warning("Fitur ini sedang dalam pengembangan.")
+
+    df = st.session_state.df
+
+    if df is None or 'cluster_numerik' not in df or 'cluster_kategorik' not in df:
+        st.warning("⚠️ Pastikan data sudah diproses melalui Clustering Numerik dan Kategorik terlebih dahulu.")
+    else:
+        try:
+            from sklearn.preprocessing import OneHotEncoder
+
+            st.subheader("⚙️ Proses Ensemble Clustering")
+
+            # ===============================
+            # FUNGSI ROCK Clustering
+            # ===============================
+
+            def jaccard_similarity_matrix(encoded):
+                return 1 - pairwise_distances(encoded, metric="hamming")
+
+            def get_neighbors(sim_matrix, theta):
+                n = sim_matrix.shape[0]
+                neighbors = [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
+                return neighbors
+
+            def calculate_links(neighbors):
+                n = len(neighbors)
+                links = np.zeros((n, n), dtype=int)
+                for i, j in combinations(range(n), 2):
+                    common = neighbors[i].intersection(neighbors[j])
+                    links[i, j] = links[j, i] = len(common)
+                return links
+
+            def rock_clustering(df_cat, theta, k_opt):
+                encoded = pd.DataFrame()
+                for col in df_cat.columns:
+                    le = LabelEncoder()
+                    encoded[col] = le.fit_transform(df_cat[col])
+
+                sim_matrix = jaccard_similarity_matrix(encoded)
+                neighbors = get_neighbors(sim_matrix, theta)
+                links = calculate_links(neighbors)
+
+                dist = 1 / (links + 1e-5)  # hindari pembagian dengan nol
+                np.fill_diagonal(dist, 0)
+                condensed_dist = squareform(dist, checks=False)
+
+                linkage_matrix = linkage(condensed_dist, method='average')
+                labels = fcluster(linkage_matrix, t=k_opt, criterion='maxclust')
+                return labels
+
+            def compute_cp_star(encoded, labels):
+                sim_matrix = 1 - pairwise_distances(encoded, metric="hamming")
+                N = len(labels)
+                cp_total = 0
+                unique_labels = np.unique(labels)
+
+                for lbl in unique_labels:
+                    indices = np.where(labels == lbl)[0]
+                    n_k = len(indices)
+                    if n_k <= 1:
+                        continue  # abaikan cluster kecil
+                    sim_sum = sum(sim_matrix[i, j] for i, j in combinations(indices, 2))
+                    sim_avg = sim_sum / (n_k * (n_k - 1) / 2)
+                    cp_total += n_k * sim_avg
+
+                cp_star = cp_total / N
+                return cp_star
+
+            # ===============================
+            # ENSEMBLE CLUSTERING PROCESS
+            # ===============================
+            st.info("🔄 Menggabungkan label hasil clustering numerik & kategorik...")
+            df_ensemble_input = df[['cluster_numerik', 'cluster_kategorik']].astype(str)
+
+            encoder = OneHotEncoder(sparse_output=False)
+            encoded_ensemble = encoder.fit_transform(df_ensemble_input)
+
+            theta_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+            best_cp = -np.inf
+            best_labels = None
+            best_theta = None
+            best_k = None
+
+            progress = st.progress(0)
+            total_loop = len(theta_list) * 3
+            loop_count = 0
+
+            for theta in theta_list:
+                for k_opt in range(2, 5):
+                    labels_ensemble = rock_clustering(df_ensemble_input, theta, k_opt=k_opt)
+                    cp_star = compute_cp_star(pd.DataFrame(encoded_ensemble), labels_ensemble)
+
+                    if cp_star > best_cp:
+                        best_cp = cp_star
+                        best_labels = labels_ensemble
+                        best_theta = theta
+                        best_k = k_opt
+
+                    loop_count += 1
+                    progress.progress(loop_count / total_loop)
+
+            # Simpan hasil terbaik
+            df['cluster_ensemble_rock'] = best_labels
+            st.session_state.df = df
+
+            st.success(f"✅ Clustering ensemble selesai! Theta terbaik = {best_theta}, k = {best_k}, CP* = {best_cp:.4f}")
+            st.subheader("📋 Hasil Clustering Ensemble")
+            st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
+
+            st.subheader("📈 Distribusi Hasil Ensemble")
+            fig, ax = plt.subplots()
+            sns.countplot(x=df['cluster_ensemble_rock'], palette='magma', ax=ax)
+            ax.set_title("Distribusi Cluster Ensemble (ROCK)")
+            ax.set_xlabel("Cluster")
+            ax.set_ylabel("Jumlah Data")
+            st.pyplot(fig)
+
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat ensemble clustering: {e}")
