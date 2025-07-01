@@ -12,6 +12,7 @@ from sklearn.metrics import pairwise_distances
 from scipy.spatial.distance import squareform
 from scipy.cluster.hierarchy import linkage, fcluster
 from itertools import combinations
+from sklearn.manifold import TSNE  # ⬅️ Diperlukan untuk t-SNE di ROCK
 
 # Konfigurasi halaman
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
@@ -307,22 +308,22 @@ elif menu == "🧮 Clustering Kategorik":
 
             # 4. Visualisasi t-SNE Hasil Clustering ROCK
             st.subheader("🔍 Visualisasi t-SNE Hasil Clustering ROCK")
-            encoded = pd.DataFrame()
-            for col in df_cat.columns:
-                le = LabelEncoder()
-                encoded[col] = le.fit_transform(df_cat[col])
 
+            # Gunakan encoded dari hasil clustering terbaik
             sim_matrix = jaccard_similarity_matrix(encoded)
             dist_matrix = 1 - sim_matrix
 
+            # Jalankan t-SNE
             tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
             X_tsne = tsne.fit_transform(dist_matrix)
 
+            # Visualisasi
             fig_tsne = plt.figure(figsize=(8, 6))
             for cl in np.unique(best_labels):
+                idx = np.where(best_labels == cl)
                 plt.scatter(
-                    X_tsne[best_labels == cl, 0],
-                    X_tsne[best_labels == cl, 1],
+                    X_tsne[idx, 0],
+                    X_tsne[idx, 1],
                     label=f'Cluster {cl}'
                 )
             plt.title(f'Visualisasi ROCK Clustering\nTheta={best_theta}, k={best_k}, CP*={best_cp:.4f}')
