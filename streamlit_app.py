@@ -403,148 +403,167 @@ elif menu == "🧮 Clustering Kategorik":
         st.pyplot(fig)
 
 # =============== CLUSTERING ENSEMBLE ===============
-elif menu == "🔗 Clustering Ensemble":
-    st.title("🔗 Clustering Ensemble (ROCK)")
-
+elif menu == "🧪 Clustering Ensemble":
+    st.title("🧪 Clustering Ensemble ROCK")
     df = st.session_state.df
 
-    if df is None or 'cluster_numerik' not in df or 'cluster_kategorik' not in df:
-        st.warning("⚠️ Pastikan data sudah diproses melalui Clustering Numerik dan Kategorik terlebih dahulu.")
+    if df is None or 'cluster_numerik' not in df.columns or 'cluster_kategorik' not in df.columns:
+        st.warning("⚠️ Pastikan data sudah diproses dan memiliki 'cluster_numerik' & 'cluster_kategorik'.")
     else:
-        try:
-            from sklearn.preprocessing import OneHotEncoder
-            from sklearn.manifold import TSNE
+        import numpy as np
+        import pandas as pd
+        from sklearn.preprocessing import LabelEncoder
+        from itertools import combinations
+        import matplotlib.pyplot as plt
+        from sklearn.manifold import TSNE
 
-            st.subheader("⚙️ Proses Ensemble Clustering")
+        # ====================== #
+        # 1. Fungsi ROCK         #
+        # ====================== #
+        def jaccard_similarity_matrix(encoded):
+            n = encoded.shape[0]
+            sim_matrix = np.zeros((n, n))
+            data_as_sets = [
+                set((col, val) for col, val in enumerate(row))
+                for row in encoded.values
+            ]
+            for i in range(n):
+                for j in range(i, n):
+                    inter = data_as_sets[i].intersection(data_as_sets[j])
+                    union = data_as_sets[i].union(data_as_sets[j])
+                    sim = len(inter) / len(union) if union else 1
+                    sim_matrix[i, j] = sim
+                    sim_matrix[j, i] = sim
+            return sim_matrix
 
-            # ===============================
-            # FUNGSI ROCK Clustering
-            # ===============================
+        def get_neighbors(sim_matrix, theta):
+            n = sim_matrix.shape[0]
+            neighbors = [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
+            return neighbors
 
-            def jaccard_similarity_matrix(encoded):
-                return 1 - pairwise_distances(encoded, metric="hamming")
+        def calculate_goodness(links, cluster_members, theta):
+            f_theta = (1 - theta) / (1 + theta)
+            goodness = np.zeros_like(links, dtype=float)
+            n = len(cluster_members)
+            for i, j in combinations(range(n), 2):
+                link_ij = links[i, j]
+                if link_ij == 0:
+                    continue
+                ni = len(cluster_members[i])
+                nj = len(cluster_members[j])
+                denominator = (ni + nj) ** (1 + 2 * f_theta) - ni ** (1 + 2 * f_theta) - nj ** (1 + 2 * f_theta)
+                g = link_ij / denominator if denominator != 0 else 0
+                goodness[i, j] = goodness[j, i] = g
+            return goodness
 
-            def get_neighbors(sim_matrix, theta):
-                n = sim_matrix.shape[0]
-                neighbors = [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
-                return neighbors
+        def rock_clustering(data, theta, target_cluster_count):
+            encoded = data.apply(LabelEncoder().fit_transform)
+            sim_matrix = jaccard_similarity_matrix(encoded)
+            neighbors = get_neighbors(sim_matrix, theta)
+            n = len(data)
+            clusters = [{i} for i in range(n)]
+            while len(clusters) > target_cluster_count:
+                cluster_indices = list(range(len(clusters)))
+                cluster_members = clusters
+                cluster_neighbors = [set().union(*(neighbors[i] for i in cluster)) for cluster in clusters]
+                links = np.zeros((len(clusters), len(clusters)), dtype=int)
+                for i, j in combinations(cluster_indices, 2):
+                    common_neighbors = cluster_neighbors[i].intersection(cluster_neighbors[j])
+                    links[i, j] = links[j, i] = len(common_neighbors)
+                goodness = calculate_goodness(links, cluster_members, theta)
+                i_max, j_max = np.unravel_index(np.argmax(goodness), goodness.shape)
+                max_goodness = goodness[i_max, j_max]
+                if max_goodness == 0:
+                    break
+                clusters[i_max] = clusters[i_max].union(clusters[j_max])
+                del clusters[j_max]
+            labels = np.zeros(n, dtype=int)
+            for cluster_id, members in enumerate(clusters):
+                for member in members:
+                    labels[member] = cluster_id
+            return labels, encoded
 
-            def calculate_links(neighbors):
-                n = len(neighbors)
-                links = np.zeros((n, n), dtype=int)
-                for i, j in combinations(range(n), 2):
-                    common = neighbors[i].intersection(neighbors[j])
-                    links[i, j] = links[j, i] = len(common)
-                return links
+        def calculate_total_cp(labels, sim_matrix):
+            df_labels = pd.DataFrame({'label': labels})
+            total_sim = 0
+            total_pairs = 0
+            for cluster_id in np.unique(labels):
+                members = df_labels[df_labels['label'] == cluster_id].index.tolist()
+                n_k = len(members)
+                if n_k <= 1:
+                    continue
+                for i, j in combinations(members, 2):
+                    total_sim += sim_matrix[i, j]
+                total_pairs += n_k * (n_k - 1) / 2
+            return total_sim / total_pairs if total_pairs != 0 else 0
 
-            def rock_clustering(df_cat, theta, k_opt):
-                encoded = pd.DataFrame()
-                for col in df_cat.columns:
-                    le = LabelEncoder()
-                    encoded[col] = le.fit_transform(df_cat[col])
+        # =============================
+        # 2. Evaluasi Ensemble ROCK
+        # =============================
+        df_ensemble = df[['cluster_numerik', 'cluster_kategorik']].copy()
+        theta_values = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+        cluster_range = [2, 3, 4, 5, 6, 7]
 
-                sim_matrix = jaccard_similarity_matrix(encoded)
-                neighbors = get_neighbors(sim_matrix, theta)
-                links = calculate_links(neighbors)
+        ensemble_cp_results = []
+        for theta in theta_values:
+            for k in cluster_range:
+                try:
+                    labels, encoded = rock_clustering(df_ensemble, theta, k)
+                    sim_matrix = jaccard_similarity_matrix(encoded)
+                    total_cp = calculate_total_cp(labels, sim_matrix)
+                    ensemble_cp_results.append({
+                        'theta': theta,
+                        'k': k,
+                        'cp_star_total': total_cp
+                    })
+                except Exception as e:
+                    st.write(f"❌ Theta={theta:.2f}, k={k}: {e}")
 
-                dist = 1 / (links + 1e-5)
-                np.fill_diagonal(dist, 0)
-                condensed_dist = squareform(dist, checks=False)
+        cp_ensemble_summary = pd.DataFrame(ensemble_cp_results)
+        st.subheader("📊 Rangkuman Evaluasi CP* Total (Clustering Ensemble)")
+        st.dataframe(cp_ensemble_summary.sort_values(by=['theta', 'k']))
 
-                linkage_matrix = linkage(condensed_dist, method='average')
-                labels = fcluster(linkage_matrix, t=k_opt, criterion='maxclust')
-                return labels
+        # =============================
+        # 3. Final Clustering ROCK Ensemble
+        # =============================
+        theta_final = 0.40
+        k_final = 7
+        labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
+        df['cluster_ensemble_rock'] = labels_final
+        st.session_state.df = df
+        st.success(f"✅ Clustering Ensemble ROCK selesai! Theta = {theta_final}, k = {k_final}")
 
-            def compute_cp_star(encoded, labels):
-                sim_matrix = 1 - pairwise_distances(encoded, metric="hamming")
-                N = len(labels)
-                cp_total = 0
-                unique_labels = np.unique(labels)
+        st.subheader("📋 Hasil Clustering Ensemble")
+        st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
 
-                for lbl in unique_labels:
-                    indices = np.where(labels == lbl)[0]
-                    n_k = len(indices)
-                    if n_k <= 1:
-                        continue
-                    sim_sum = sum(sim_matrix[i, j] for i, j in combinations(indices, 2))
-                    sim_avg = sim_sum / (n_k * (n_k - 1) / 2)
-                    cp_total += n_k * sim_avg
+        cluster_counts = df['cluster_ensemble_rock'].value_counts().sort_index()
+        st.subheader("📈 Distribusi Cluster Ensemble")
+        fig_bar, ax_bar = plt.subplots()
+        ax_bar.bar(cluster_counts.index.astype(str), cluster_counts.values, color='mediumseagreen')
+        ax_bar.set_xlabel("Cluster")
+        ax_bar.set_ylabel("Jumlah Data")
+        ax_bar.set_title("Distribusi Jumlah Data per Cluster (Ensemble)")
+        st.pyplot(fig_bar)
 
-                return cp_total / N
+        # =============================
+        # 4. Visualisasi t-SNE Ensemble ROCK
+        # =============================
+        st.subheader("🌀 Visualisasi t-SNE Clustering Ensemble")
+        sim_matrix = jaccard_similarity_matrix(encoded_final)
+        dist_matrix = 1 - sim_matrix
+        tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+        X_tsne = tsne.fit_transform(dist_matrix)
 
-            # ===============================
-            # PROSES CLUSTERING ENSEMBLE
-            # ===============================
-            df_ensemble_input = df[['cluster_numerik', 'cluster_kategorik']].astype(str)
-            encoder = OneHotEncoder(sparse_output=False)
-            encoded_ensemble = encoder.fit_transform(df_ensemble_input)
-
-            theta_list = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-            best_cp = -np.inf
-            best_labels = None
-            best_theta = None
-            best_k = None
-
-            progress = st.progress(0)
-            total_loop = len(theta_list) * 3
-            loop_count = 0
-
-            for theta in theta_list:
-                for k_opt in range(2, 5):
-                    labels_ensemble = rock_clustering(df_ensemble_input, theta, k_opt=k_opt)
-                    cp_star = compute_cp_star(pd.DataFrame(encoded_ensemble), labels_ensemble)
-
-                    if cp_star > best_cp:
-                        best_cp = cp_star
-                        best_labels = labels_ensemble
-                        best_theta = theta
-                        best_k = k_opt
-
-                    loop_count += 1
-                    progress.progress(loop_count / total_loop)
-
-            df['cluster_ensemble_rock'] = best_labels
-            st.session_state.df = df
-
-            st.success(f"✅ Clustering ensemble selesai! Theta terbaik = {best_theta}, k = {best_k}, CP* = {best_cp:.4f}")
-            st.subheader("📋 Hasil Clustering Ensemble")
-            st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
-
-            st.subheader("📈 Distribusi Cluster Ensemble")
-            fig, ax = plt.subplots()
-            sns.countplot(x=df['cluster_ensemble_rock'], palette='magma', ax=ax)
-            ax.set_title("Distribusi Cluster Ensemble (ROCK)")
-            ax.set_xlabel("Cluster")
-            ax.set_ylabel("Jumlah Data")
-            st.pyplot(fig)
-
-            # ===============================
-            # t-SNE Visualisasi Hasil Ensemble
-            # ===============================
-            st.subheader("🔍 Visualisasi t-SNE Hasil Ensemble")
-
-            sim_matrix = jaccard_similarity_matrix(pd.DataFrame(encoded_ensemble))
-            dist_matrix = 1 - sim_matrix
-
-            tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
-            X_tsne = tsne.fit_transform(dist_matrix)
-
-            fig_tsne = plt.figure(figsize=(8, 6))
-            for cl in np.unique(best_labels):
-                plt.scatter(
-                    X_tsne[np.array(best_labels) == cl, 0],
-                    X_tsne[np.array(best_labels) == cl, 1],
-                    label=f'Cluster {cl}'
-                )
-            plt.title(f'Visualisasi ROCK Clustering Ensemble\nTheta={best_theta}, k={best_k}, CP*={best_cp:.4f}')
-            plt.xlabel('t-SNE 1')
-            plt.ylabel('t-SNE 2')
-            plt.legend()
-            plt.grid(True)
-            st.pyplot(fig_tsne)
-
-        except Exception as e:
-            st.error(f"❌ Terjadi kesalahan saat ensemble clustering: {e}")
+        fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
+        for cl in np.unique(labels_final):
+            idx = np.array(labels_final) == cl
+            ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}', s=60)
+        ax_tsne.set_title(f"t-SNE Clustering Ensemble ROCK\nTheta = {theta_final}, k = {k_final}")
+        ax_tsne.set_xlabel("t-SNE Komponen 1")
+        ax_tsne.set_ylabel("t-SNE Komponen 2")
+        ax_tsne.legend()
+        ax_tsne.grid(True)
+        st.pyplot(fig_tsne)
 
 # =============== EVALUASI CLUSTERING ENSEMBLE ===============
 elif menu == "📏 Evaluasi Clustering Ensemble":
