@@ -632,53 +632,26 @@ elif menu == "🧾 Interpretasi Hasil":
         st.warning("⚠️ Pastikan hasil clustering ensemble sudah tersedia.")
     else:
         try:
-            st.subheader("📈 Rata-rata Omset, Tenaga Kerja, dan Modal per Cluster")
+            st.subheader("📊 Tabel Ringkasan per Cluster")
 
-            # Hitung rata-rata per cluster
+            # 1. Rata-rata fitur numerik per cluster
             mean_stats = df.groupby('cluster_ensemble_rock')[['omset', 'tenaga kerja', 'modal']].mean().round(2)
-            cluster_list = mean_stats.index.tolist()
 
-            for cl in cluster_list:
-                st.markdown(f"### 🧩 Cluster {cl}")
-                col1, col2, col3 = st.columns(3)
+            # 2. Dominasi 'jenis' per cluster
+            jenis_dom = df.groupby('cluster_ensemble_rock')['jenis'].agg(lambda x: x.value_counts().idxmax()).rename('jenis_terbanyak')
 
-                with col1:
-                    st.metric(label="💰 Rata-rata Omset", value=f"{mean_stats.loc[cl, 'omset']:,}")
-                with col2:
-                    st.metric(label="👷 Rata-rata Tenaga Kerja", value=f"{mean_stats.loc[cl, 'tenaga kerja']:,}")
-                with col3:
-                    st.metric(label="🏢 Rata-rata Modal", value=f"{mean_stats.loc[cl, 'modal']:,}")
+            # 3. Dominasi 'ojol' per cluster
+            ojol_dom = df.groupby('cluster_ensemble_rock')['ojol'].agg(lambda x: x.value_counts().idxmax()).rename('ojol_terbanyak')
 
-                st.markdown("---")
+            # 4. Gabungkan semua jadi satu dataframe
+            summary = pd.concat([mean_stats, jenis_dom, ojol_dom], axis=1).reset_index()
+            summary.columns = ['Cluster', 'Omset (rata2)', 'Tenaga Kerja (rata2)', 'Modal (rata2)', 'Jenis Dominan', 'Ojol Dominan']
+
+            # 5. Tampilkan tabel
+            st.dataframe(summary)
 
         except Exception as e:
-            st.error(f"❌ Terjadi kesalahan saat menampilkan interpretasi: {e}")
-
-        st.subheader("📊 Dominasi Variabel Kategorikal per Cluster")
-
-        # Distribusi Ojol per Cluster
-        st.markdown("#### 🚗 Distribusi *Ojol* per Cluster")
-        ojol_dist = pd.crosstab(df['cluster_ensemble_rock'], df['ojol'])
-        st.dataframe(ojol_dist)
-
-        st.markdown("##### ✅ Dominasi Ojol Tiap Cluster:")
-        for cl in ojol_dist.index:
-            dominant_ojol = ojol_dist.loc[cl].idxmax()
-            count = ojol_dist.loc[cl].max()
-            st.markdown(f"- Cluster {cl}: **{dominant_ojol.upper()}** sebanyak {count} UMKM")
-
-        st.markdown("---")
-
-        # Distribusi Jenis per Cluster
-        st.markdown("#### 🏷️ Distribusi *Jenis* Produk per Cluster")
-        jenis_dist = pd.crosstab(df['cluster_ensemble_rock'], df['jenis'])
-        st.dataframe(jenis_dist)
-
-        st.markdown("##### ✅ Dominasi Jenis Tiap Cluster:")
-        for cl in jenis_dist.index:
-            dominant_jenis = jenis_dist.loc[cl].idxmax()
-            count = jenis_dist.loc[cl].max()
-            st.markdown(f"- Cluster {cl}: **{dominant_jenis.upper()}** sebanyak {count} UMKM")
+            st.error(f"❌ Terjadi kesalahan saat menggabungkan interpretasi: {e}")
 
 # =============== UNDUH ===============
 elif menu == "💾 Unduh Hasil Clustering Ensemble":
