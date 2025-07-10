@@ -562,37 +562,66 @@ elif menu == "🤝 Clustering Ensemble":
 
 # =============== EVALUASI CLUSTERING ENSEMBLE ===============
 elif menu == "📏 Evaluasi Clustering Ensemble":
-    st.title("📏 Evaluasi Clustering Ensemble")
-
+    st.title("📏 Evaluasi Clustering Ensemble ROCK")
     df = st.session_state.df
-    if df is None or 'cluster_ensemble_rock' not in df:
-        st.warning("⚠️ Pastikan Anda telah menyelesaikan proses Clustering Ensemble terlebih dahulu.")
+
+    if df is None or 'cluster_ensemble_rock' not in df.columns:
+        st.warning("⚠️ Data hasil clustering ensemble belum tersedia.")
     else:
-        try:
-            st.subheader("📌 Davies-Bouldin Index (DBI)")
+        st.markdown("### 📌 Evaluasi Menggunakan Silhouette Score dengan Jaccard Manual")
 
-            from sklearn.metrics import davies_bouldin_score
+        # Gunakan data clustering ensemble
+        df_eval = df[['cluster_numerik', 'cluster_kategorik']].astype(str)
+        labels_final = df['cluster_ensemble_rock'].values
+        theta_final = 0.40
+        k_final = len(np.unique(labels_final))
 
-            # Gunakan kembali encoded_ensemble untuk hitung Jaccard similarity dan distance matrix
-            from sklearn.preprocessing import OneHotEncoder
-            encoded_ensemble = OneHotEncoder(sparse_output=False).fit_transform(
-                df[['cluster_numerik', 'cluster_kategorik']].astype(str)
-            )
-            sim_matrix = 1 - pairwise_distances(pd.DataFrame(encoded_ensemble), metric="hamming")
+        # Fungsi-fungsi pendukung
+        def jaccard_similarity_matrix(encoded):
+            n = encoded.shape[0]
+            sim_matrix = np.zeros((n, n))
+            data_as_sets = [
+                set((col, val) for col, val in enumerate(row))
+                for row in encoded.values
+            ]
+            for i in range(n):
+                for j in range(i, n):
+                    inter = data_as_sets[i].intersection(data_as_sets[j])
+                    union = data_as_sets[i].union(data_as_sets[j])
+                    sim = len(inter) / len(union) if union else 1
+                    sim_matrix[i, j] = sim
+                    sim_matrix[j, i] = sim
+            return sim_matrix
+
+        def silhouette_score_jaccard(encoded, labels):
+            from sklearn.metrics import silhouette_score
+            sim_matrix = jaccard_similarity_matrix(encoded)
             dist_matrix = 1 - sim_matrix
+            score = silhouette_score(dist_matrix, labels, metric='precomputed')
+            return score
 
-            # Gunakan best_labels dari clustering ensemble
-            labels = df['cluster_ensemble_rock'].values
-            db_index = davies_bouldin_score(dist_matrix, labels)
+        # Jalankan evaluasi
+        with st.spinner("🔍 Menghitung Silhouette Score..."):
+            encoded_final = df_eval.apply(LabelEncoder().fit_transform)
+            score = silhouette_score_jaccard(encoded_final, labels_final)
 
-            st.success(f"✔️ Nilai Davies-Bouldin Index (DBI): **{db_index:.4f}**")
-            st.markdown("""
-            **Interpretasi:**
-            - DBI yang lebih rendah menandakan cluster yang lebih baik (semakin kecil semakin baik).
-            - Nilai DBI < 1 umumnya dianggap baik dalam praktik clustering.
-            """)
-        except Exception as e:
-            st.error(f"❌ Terjadi kesalahan saat menghitung DBI: {e}")
+        st.success("✅ Evaluasi selesai!")
+        st.markdown(f"""
+        - **Theta (θ)** = `{theta_final}`
+        - **Jumlah Cluster (k)** = `{k_final}`
+        - **Silhouette Score** = `{score:.4f}`
+        """)
+
+        # Visualisasi tambahan (opsional)
+        st.subheader("📈 Interpretasi Skor Silhouette")
+        if score > 0.7:
+            st.info("🔹 Skor Silhouette sangat baik — cluster sangat terpisah.")
+        elif score > 0.5:
+            st.info("🔸 Skor Silhouette cukup baik — cluster cukup terpisah.")
+        elif score > 0.25:
+            st.warning("⚠️ Skor Silhouette sedang — mungkin ada tumpang tindih antar cluster.")
+        else:
+            st.error("🔻 Skor Silhouette rendah — hasil cluster kurang optimal.")
 
 # =============== INTERPRETASI CLUSTERING ENSEMBLE ===============
 elif menu == "🧾 Interpretasi Hasil":
