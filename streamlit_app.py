@@ -25,7 +25,7 @@ menu = st.sidebar.radio("Pilih halaman:", [
     "⚙️ Data Preprocessing",
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
-    "🧪 Clustering Ensemble",
+    " Clustering Ensemble",
     "📏 Evaluasi Clustering Ensemble",
     "🧾 Interpretasi Hasil",
     "💾 Unduh Hasil Clustering Ensemble"
@@ -403,8 +403,8 @@ elif menu == "🧮 Clustering Kategorik":
         st.pyplot(fig)
 
 # =============== CLUSTERING ENSEMBLE ===============
-elif menu == "🧪 Clustering Ensemble":
-    st.title("🧪 Clustering Ensemble ROCK")
+elif menu == "Clustering Ensemble":
+    st.title("Clustering Ensemble ROCK")
     df = st.session_state.df
 
     if df is None or 'cluster_numerik' not in df.columns or 'cluster_kategorik' not in df.columns:
