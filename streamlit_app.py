@@ -25,7 +25,7 @@ menu = st.sidebar.radio("Pilih halaman:", [
     "⚙️ Data Preprocessing",
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
-    " Clustering Ensemble",
+    "🤝 Clustering Ensemble",
     "📏 Evaluasi Clustering Ensemble",
     "🧾 Interpretasi Hasil",
     "💾 Unduh Hasil Clustering Ensemble"
@@ -403,23 +403,19 @@ elif menu == "🧮 Clustering Kategorik":
         st.pyplot(fig)
 
 # =============== CLUSTERING ENSEMBLE ===============
-elif menu == "Clustering Ensemble":
-    st.title("Clustering Ensemble ROCK")
+elif menu == "🤝 Clustering Ensemble":
+    st.title("🤝 Clustering Ensemble ROCK")
     df = st.session_state.df
 
     if df is None or 'cluster_numerik' not in df.columns or 'cluster_kategorik' not in df.columns:
-        st.warning("⚠️ Pastikan data sudah diproses dan memiliki 'cluster_numerik' & 'cluster_kategorik'.")
+        st.warning("⚠️ Pastikan data sudah diproses dan memiliki kolom 'cluster_numerik' dan 'cluster_kategorik'.")
     else:
-        import numpy as np
-        import pandas as pd
-        from sklearn.preprocessing import LabelEncoder
-        from itertools import combinations
-        import matplotlib.pyplot as plt
-        from sklearn.manifold import TSNE
+        st.write("✅ Mulai proses Clustering Ensemble...")
 
-        # ====================== #
-        # 1. Fungsi ROCK         #
-        # ====================== #
+        # Gunakan data cluster sebagai kategorikal (harus string untuk LabelEncoder)
+        df_ensemble = df[['cluster_numerik', 'cluster_kategorik']].astype(str).copy()
+
+        # --- FUNGSI UTILITAS ---
         def jaccard_similarity_matrix(encoded):
             n = encoded.shape[0]
             sim_matrix = np.zeros((n, n))
@@ -438,8 +434,7 @@ elif menu == "Clustering Ensemble":
 
         def get_neighbors(sim_matrix, theta):
             n = sim_matrix.shape[0]
-            neighbors = [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
-            return neighbors
+            return [set(np.where(sim_matrix[i] >= theta)[0]) - {i} for i in range(n)]
 
         def calculate_goodness(links, cluster_members, theta):
             f_theta = (1 - theta) / (1 + theta)
@@ -497,68 +492,68 @@ elif menu == "Clustering Ensemble":
                 total_pairs += n_k * (n_k - 1) / 2
             return total_sim / total_pairs if total_pairs != 0 else 0
 
-        # =============================
-        # 2. Evaluasi Ensemble ROCK
-        # =============================
-        df_ensemble = df[['cluster_numerik', 'cluster_kategorik']].copy()
-        theta_values = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
-        cluster_range = [2, 3, 4, 5, 6, 7]
-
+        # --- EVALUASI BEBERAPA KOMBINASI THETA DAN K ---
+        theta_values = [0.3, 0.4, 0.5]  # Bisa diperluas lagi jika sudah stabil
+        cluster_range = [3, 4, 5, 6, 7]
         ensemble_cp_results = []
-        for theta in theta_values:
-            for k in cluster_range:
-                try:
-                    labels, encoded = rock_clustering(df_ensemble, theta, k)
-                    sim_matrix = jaccard_similarity_matrix(encoded)
-                    total_cp = calculate_total_cp(labels, sim_matrix)
-                    ensemble_cp_results.append({
-                        'theta': theta,
-                        'k': k,
-                        'cp_star_total': total_cp
-                    })
-                except Exception as e:
-                    st.write(f"❌ Theta={theta:.2f}, k={k}: {e}")
+
+        with st.spinner("🔍 Mengevaluasi kombinasi theta dan jumlah cluster..."):
+            for theta in theta_values:
+                for k in cluster_range:
+                    try:
+                        labels_try, encoded_try = rock_clustering(df_ensemble, theta, k)
+                        sim_matrix_try = jaccard_similarity_matrix(encoded_try)
+                        total_cp = calculate_total_cp(labels_try, sim_matrix_try)
+                        ensemble_cp_results.append({
+                            'theta': theta,
+                            'k': k,
+                            'cp_star_total': total_cp
+                        })
+                    except Exception as e:
+                        st.write(f"❌ Theta={theta:.2f}, k={k}: {e}")
 
         cp_ensemble_summary = pd.DataFrame(ensemble_cp_results)
         st.subheader("📊 Rangkuman Evaluasi CP* Total (Clustering Ensemble)")
         st.dataframe(cp_ensemble_summary.sort_values(by=['theta', 'k']))
 
-        # =============================
-        # 3. Final Clustering ROCK Ensemble
-        # =============================
+        # --- CLUSTERING TERBAIK SECARA MANUAL / OTOMATIS ---
         theta_final = 0.40
         k_final = 7
-        labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
-        df['cluster_ensemble_rock'] = labels_final
-        st.session_state.df = df
-        st.success(f"✅ Clustering Ensemble ROCK selesai! Theta = {theta_final}, k = {k_final}")
+
+        st.markdown(f"### 🚀 Final Clustering: Theta = **{theta_final}**, K = **{k_final}**")
+        with st.spinner("🔄 Menjalankan final clustering ensemble..."):
+            labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
+            df['cluster_ensemble_rock'] = labels_final
+            st.session_state.df = df
+
+        st.success("✅ Clustering Ensemble selesai!")
 
         st.subheader("📋 Hasil Clustering Ensemble")
         st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
 
+        # --- PLOT DISTRIBUSI CLUSTER ---
         cluster_counts = df['cluster_ensemble_rock'].value_counts().sort_index()
-        st.subheader("📈 Distribusi Cluster Ensemble")
+        st.subheader("📈 Distribusi Jumlah Data per Cluster")
         fig_bar, ax_bar = plt.subplots()
         ax_bar.bar(cluster_counts.index.astype(str), cluster_counts.values, color='mediumseagreen')
         ax_bar.set_xlabel("Cluster")
         ax_bar.set_ylabel("Jumlah Data")
-        ax_bar.set_title("Distribusi Jumlah Data per Cluster (Ensemble)")
+        ax_bar.set_title("Distribusi Cluster (Ensemble)")
         st.pyplot(fig_bar)
 
-        # =============================
-        # 4. Visualisasi t-SNE Ensemble ROCK
-        # =============================
+        # --- VISUALISASI T-SNE ---
         st.subheader("🌀 Visualisasi t-SNE Clustering Ensemble")
-        sim_matrix = jaccard_similarity_matrix(encoded_final)
-        dist_matrix = 1 - sim_matrix
-        tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
-        X_tsne = tsne.fit_transform(dist_matrix)
+        with st.spinner("⏳ Memproyeksikan data ke 2D dengan t-SNE..."):
+            sim_matrix = jaccard_similarity_matrix(encoded_final)
+            dist_matrix = 1 - sim_matrix
+            tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+            X_tsne = tsne.fit_transform(dist_matrix)
 
         fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
         for cl in np.unique(labels_final):
             idx = np.array(labels_final) == cl
             ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}', s=60)
-        ax_tsne.set_title(f"t-SNE Clustering Ensemble ROCK\nTheta = {theta_final}, k = {k_final}")
+        ax_tsne.set_title(f"t-SNE Clustering Ensemble\nTheta = {theta_final}, k = {k_final}")
         ax_tsne.set_xlabel("t-SNE Komponen 1")
         ax_tsne.set_ylabel("t-SNE Komponen 2")
         ax_tsne.legend()
