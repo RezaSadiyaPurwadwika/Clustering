@@ -363,6 +363,33 @@ elif menu == "🧮 Clustering Kategorik":
 
         st.success(f"✅ Clustering ROCK selesai! Theta = {theta_final}, k = {k_final}")
 
+                # Visualisasi t-SNE
+        st.subheader("🌀 Visualisasi t-SNE Clustering Kategorik")
+
+        labels_best = rock_clustering(data, theta=0.40, target_cluster_count=4)[0]
+        df['cluster_kategorik'] = labels_best
+
+        # Encode ulang untuk t-SNE
+        encoded = data.apply(LabelEncoder().fit_transform)
+        sim_matrix = jaccard_similarity_matrix(encoded)
+        dist_matrix = 1 - sim_matrix
+
+        # t-SNE reduction
+        tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+        X_tsne = tsne.fit_transform(dist_matrix)
+
+        # Plot t-SNE
+        fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
+        for cl in np.unique(labels_best):
+            idx = np.array(labels_best) == cl
+            ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}')
+        ax_tsne.set_title("Visualisasi ROCK Clustering\nTheta = 0.40, k = 4")
+        ax_tsne.set_xlabel("t-SNE 1")
+        ax_tsne.set_ylabel("t-SNE 2")
+        ax_tsne.legend()
+        ax_tsne.grid(True)
+        st.pyplot(fig_tsne)
+
         st.subheader("📋 Hasil Clustering")
         st.dataframe(df[['ojol', 'jenis', 'cluster_kategorik']])
 
