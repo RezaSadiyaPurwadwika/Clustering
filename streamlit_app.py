@@ -127,24 +127,28 @@ elif menu == "⚙️ Data Preprocessing":
 # =============== CLUSTERING NUMERIK ===============
 elif menu == "📊 Clustering Numerik":
     st.title("📊 Clustering Data Numerik (AHC)")
+
     df_zscore = st.session_state.df_zscore
     df = st.session_state.df
+
     if df_zscore is None:
         st.warning("⚠️ Data belum tersedia. Lakukan preprocessing terlebih dahulu.")
     else:
         try:
-            X = df_zscore[['omset', 'tenaga kerja', 'modal']]
-            X_scaled = StandardScaler().fit_transform(X)
+            X_scaled = df_zscore[['omset', 'tenaga kerja', 'modal']].values
             n = len(X_scaled)
             global_mean = np.mean(X_scaled, axis=0)
+
             linkage_types = ['single', 'complete', 'average']
             best_result = {'k': None, 'link': None, 'PseudoF': -np.inf, 'ICD': np.inf}
             results = []
 
+            st.subheader("📋 Validasi Clustering Berdasarkan Pseudo-F dan ICD Rate")
             for link in linkage_types:
                 for k in range(2, 7):
                     model = AgglomerativeClustering(n_clusters=k, linkage=link)
                     labels = model.fit_predict(X_scaled)
+
                     SW = 0
                     SB = 0
                     for cl in np.unique(labels):
@@ -152,9 +156,11 @@ elif menu == "📊 Clustering Numerik":
                         mean_cl = np.mean(cluster_data, axis=0)
                         SW += np.sum((cluster_data - mean_cl) ** 2)
                         SB += len(cluster_data) * np.sum((mean_cl - global_mean) ** 2)
+
                     pseudoF = (SB / (k - 1)) / (SW / (n - k)) if SW != 0 else np.inf
                     ICD = SW / n
                     results.append((link, k, pseudoF, ICD))
+
                     if pseudoF > best_result['PseudoF']:
                         best_result = {'k': k, 'link': link, 'PseudoF': pseudoF, 'ICD': ICD}
 
@@ -169,42 +175,44 @@ elif menu == "📊 Clustering Numerik":
             - Nilai ICD terkecil: **{best_result['ICD']:.4f}**
             """)
 
-            # Clustering & visualisasi t-SNE dan dendrogram
-            from sklearn.manifold import TSNE
-            from scipy.cluster.hierarchy import dendrogram, linkage
-
+            # 1. Clustering dengan model terbaik
             best_model = AgglomerativeClustering(n_clusters=best_result['k'], linkage=best_result['link'])
             best_labels = best_model.fit_predict(X_scaled)
+
+            # Simpan hasil ke dataframe
             df['cluster_numerik'] = best_labels
             st.session_state.df = df
 
-            # t-SNE
+            # 2. Reduksi dimensi dengan t-SNE
+            from sklearn.manifold import TSNE
             tsne = TSNE(n_components=2, random_state=42)
             X_reduced = tsne.fit_transform(X_scaled)
 
+            # 3. Visualisasi t-SNE
             st.subheader("🔸 Visualisasi t-SNE")
-            fig_tsne = plt.figure(figsize=(8, 6))
+            fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
             for cl in np.unique(best_labels):
-                plt.scatter(
+                ax_tsne.scatter(
                     X_reduced[best_labels == cl, 0],
                     X_reduced[best_labels == cl, 1],
                     label=f'Cluster {cl+1}'
                 )
-            plt.title(f'Visualisasi Clustering dengan t-SNE\nLinkage={best_result["link"].upper()}, k={best_result["k"]}')
-            plt.xlabel("t-SNE 1")
-            plt.ylabel("t-SNE 2")
-            plt.legend()
-            plt.grid(True)
+            ax_tsne.set_title(f'Visualisasi Clustering dengan t-SNE\nLinkage={best_result["link"].upper()}, k={best_result["k"]}')
+            ax_tsne.set_xlabel("t-SNE 1")
+            ax_tsne.set_ylabel("t-SNE 2")
+            ax_tsne.legend()
+            ax_tsne.grid(True)
             st.pyplot(fig_tsne)
 
-            # Dendrogram
+            # 4. Visualisasi dendrogram
             st.subheader("🧬 Dendrogram Hierarki")
+            from scipy.cluster.hierarchy import linkage, dendrogram
             linked = linkage(X_scaled, method=best_result['link'])
-            fig_dendro = plt.figure(figsize=(10, 6))
-            dendrogram(linked, orientation='top', distance_sort='descending', show_leaf_counts=False)
-            plt.title(f'Dendrogram Linkage={best_result["link"].upper()}')
-            plt.xlabel("Data")
-            plt.ylabel("Jarak (distance)")
+            fig_dendro, ax_dendro = plt.subplots(figsize=(10, 6))
+            dendrogram(linked, orientation='top', distance_sort='descending', show_leaf_counts=False, ax=ax_dendro)
+            ax_dendro.set_title(f'Dendrogram Linkage={best_result["link"].upper()}')
+            ax_dendro.set_xlabel("Data")
+            ax_dendro.set_ylabel("Jarak (distance)")
             st.pyplot(fig_dendro)
 
         except Exception as e:
