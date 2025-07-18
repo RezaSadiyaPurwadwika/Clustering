@@ -22,8 +22,8 @@ st.sidebar.title("Menu Navigasi")
 menu = st.sidebar.radio("Pilih halaman:", [
     "🏠 Home",
     "📂 Upload Data",
-    "📈 Analisis Data",
     "⚙ Data Preprocessing",
+    "📈 Analisis Data",
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
     "🤝 Clustering Ensemble",
@@ -71,34 +71,6 @@ elif menu == "📂 Upload Data":
         except Exception as e:
             st.error(f"Terjadi kesalahan saat membaca file: {e}")
 
-# =============== ANALISIS DATA ===============
-elif menu == "📈 Analisis Data":
-    st.title("📈 Analisis Data UMKM")
-    df = st.session_state.df
-    if df is None:
-        st.warning("⚠ Silakan unggah data terlebih dahulu.")
-    else:
-        try:
-            df['jenis'] = df['jenis'].str.strip().str.lower()
-            df['ojol'] = df['ojol'].str.strip().str.lower()
-
-            st.subheader("1. Distribusi Kategori")
-            col1, col2 = st.columns(2)
-            with col1:
-                fig1, ax1 = plt.subplots()
-                sns.countplot(data=df, x='jenis', ax=ax1)
-                st.pyplot(fig1)
-            with col2:
-                fig2, ax2 = plt.subplots()
-                sns.countplot(data=df, x='ojol', ax=ax2)
-                st.pyplot(fig2)
-
-            st.subheader("2. Statistik Deskriptif")
-            cols_num = ['omset', 'tenaga kerja', 'modal']
-            st.dataframe(df[cols_num].describe())
-        except Exception as e:
-            st.error(f"Terjadi kesalahan saat analisis data: {e}")
-
 # =============== PREPROCESSING ===============
 elif menu == "⚙ Data Preprocessing":
     st.title("⚙ Tahap Preprocessing Data")
@@ -144,6 +116,34 @@ elif menu == "⚙ Data Preprocessing":
         except Exception as e:
             st.error(f"Terjadi kesalahan saat preprocessing: {e}")
 
+# =============== ANALISIS DATA ===============
+elif menu == "📈 Analisis Data":
+    st.title("📈 Analisis Data UMKM")
+    df = st.session_state.df
+    if df is None:
+        st.warning("⚠ Silakan unggah data terlebih dahulu.")
+    else:
+        try:
+            df['jenis'] = df['jenis'].str.strip().str.lower()
+            df['ojol'] = df['ojol'].str.strip().str.lower()
+
+            st.subheader("1. Distribusi Kategori")
+            col1, col2 = st.columns(2)
+            with col1:
+                fig1, ax1 = plt.subplots()
+                sns.countplot(data=df, x='jenis', ax=ax1)
+                st.pyplot(fig1)
+            with col2:
+                fig2, ax2 = plt.subplots()
+                sns.countplot(data=df, x='ojol', ax=ax2)
+                st.pyplot(fig2)
+
+            st.subheader("2. Statistik Deskriptif")
+            cols_num = ['omset', 'tenaga kerja', 'modal']
+            st.dataframe(df[cols_num].describe())
+        except Exception as e:
+            st.error(f"Terjadi kesalahan saat analisis data: {e}")
+            
 # =============== CLUSTERING NUMERIK ===============
 elif menu == "📊 Clustering Numerik":
     st.title("📊 Clustering Data Numerik (AHC)")
