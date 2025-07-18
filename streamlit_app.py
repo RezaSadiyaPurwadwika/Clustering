@@ -7,12 +7,12 @@ import io
 
 from scipy.stats import zscore
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler, LabelEncoder  # ⬅️ Tambahkan LabelEncoder di sini
+from sklearn.preprocessing import StandardScaler, LabelEncoder  # ⬅ Tambahkan LabelEncoder di sini
 from sklearn.metrics import pairwise_distances
 from scipy.spatial.distance import squareform
 from scipy.cluster.hierarchy import linkage, fcluster
 from itertools import combinations
-from sklearn.manifold import TSNE  # ⬅️ Diperlukan untuk t-SNE di ROCK
+from sklearn.manifold import TSNE  # ⬅ Diperlukan untuk t-SNE di ROCK
 
 # Konfigurasi halaman
 st.set_page_config(page_title="Clustering UMKM", layout="wide")
@@ -23,7 +23,7 @@ menu = st.sidebar.radio("Pilih halaman:", [
     "🏠 Home",
     "📂 Upload Data",
     "📈 Analisis Data",
-    "⚙️ Data Preprocessing",
+    "⚙ Data Preprocessing",
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
     "🤝 Clustering Ensemble",
@@ -52,10 +52,10 @@ if menu == "🏠 Home":
     with tab2:
         st.markdown("""
         ### Aturan Penggunaan
-        **Format CSV wajib memuat kolom:**
-        - `modal`, `omset`, `tenaga_kerja`: angka bulat
-        - `ojol`: "ya" / "tidak"
-        - `jenis`: "mamin" / "oleh"
+        *Format CSV wajib memuat kolom:*
+        - modal, omset, tenaga_kerja: angka bulat
+        - ojol: "ya" / "tidak"
+        - jenis: "mamin" / "oleh"
         """)
 
 # =============== UPLOAD ===============
@@ -71,13 +71,12 @@ elif menu == "📂 Upload Data":
         except Exception as e:
             st.error(f"Terjadi kesalahan saat membaca file: {e}")
 
-# =============== ANALISIS DATA ===============
-elif menu == "📈 Analisis Data":
-    st.title("📈 Analisis Data Awal")
+# =============== PREPROCESSING ===============
+elif menu == "⚙ Data Preprocessing":
+    st.title("⚙ Tahap Preprocessing Data")
     df = st.session_state.df
-
     if df is None:
-        st.warning("⚠️ Silakan unggah data terlebih dahulu.")
+        st.warning("⚠ Silakan unggah data terlebih dahulu.")
     else:
         try:
             df['jenis'] = df['jenis'].str.strip().str.lower()
@@ -96,15 +95,7 @@ elif menu == "📈 Analisis Data":
             st.subheader("2. Statistik Deskriptif")
             cols_num = ['omset', 'tenaga kerja', 'modal']
             st.dataframe(df[cols_num].describe())
-            
-# =============== PREPROCESSING ===============
-elif menu == "⚙️ Data Preprocessing":
-    st.title("⚙️ Tahap Preprocessing Data")
-    df = st.session_state.df
-    if df is None:
-        st.warning("⚠️ Silakan unggah data terlebih dahulu.")
-    else:
-        try:
+
             st.subheader("3. Missing Values")
             st.dataframe(df.isnull().sum())
 
@@ -142,7 +133,7 @@ elif menu == "📊 Clustering Numerik":
     df = st.session_state.df
 
     if df_zscore is None:
-        st.warning("⚠️ Data belum tersedia. Lakukan preprocessing terlebih dahulu.")
+        st.warning("⚠ Data belum tersedia. Lakukan preprocessing terlebih dahulu.")
     else:
         try:
             X_scaled = df_zscore[['omset', 'tenaga kerja', 'modal']].values
@@ -179,10 +170,10 @@ elif menu == "📊 Clustering Numerik":
 
             st.subheader("🏆 Hasil Clustering Terbaik")
             st.markdown(f"""
-            - Jumlah klaster optimum: **{best_result['k']}**
-            - Metode linkage terbaik: **{best_result['link'].capitalize()}**
-            - Nilai Pseudo-F tertinggi: **{best_result['PseudoF']:.4f}**
-            - Nilai ICD terkecil: **{best_result['ICD']:.4f}**
+            - Jumlah klaster optimum: *{best_result['k']}*
+            - Metode linkage terbaik: *{best_result['link'].capitalize()}*
+            - Nilai Pseudo-F tertinggi: *{best_result['PseudoF']:.4f}*
+            - Nilai ICD terkecil: *{best_result['ICD']:.4f}*
             """)
 
             # 1. Clustering dengan model terbaik
@@ -234,7 +225,7 @@ elif menu == "🧮 Clustering Kategorik":
     df = st.session_state.df
 
     if df is None:
-        st.warning("⚠️ Silakan unggah dan preprocessing data terlebih dahulu.")
+        st.warning("⚠ Silakan unggah dan preprocessing data terlebih dahulu.")
     else:
         import numpy as np
         import pandas as pd
@@ -418,7 +409,7 @@ elif menu == "🤝 Clustering Ensemble":
     df = st.session_state.df
 
     if df is None or 'cluster_numerik' not in df.columns or 'cluster_kategorik' not in df.columns:
-        st.warning("⚠️ Pastikan data sudah diproses dan memiliki kolom 'cluster_numerik' dan 'cluster_kategorik'.")
+        st.warning("⚠ Pastikan data sudah diproses dan memiliki kolom 'cluster_numerik' dan 'cluster_kategorik'.")
     else:
         st.write("✅ Mulai proses Clustering Ensemble...")
 
@@ -530,7 +521,7 @@ elif menu == "🤝 Clustering Ensemble":
         theta_final = 0.40
         k_final = 7
 
-        st.markdown(f"### 🚀 Final Clustering: Theta = **{theta_final}**, K = **{k_final}**")
+        st.markdown(f"### 🚀 Final Clustering: Theta = *{theta_final}, K = **{k_final}*")
         with st.spinner("🔄 Menjalankan final clustering ensemble..."):
             labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
             df['cluster_ensemble_rock'] = labels_final
@@ -576,7 +567,7 @@ elif menu == "📏 Evaluasi Clustering Ensemble":
     df = st.session_state.df
 
     if df is None or 'cluster_ensemble_rock' not in df.columns:
-        st.warning("⚠️ Data hasil clustering ensemble belum tersedia.")
+        st.warning("⚠ Data hasil clustering ensemble belum tersedia.")
     else:
         st.markdown("### 📌 Evaluasi Menggunakan Silhouette Score dengan Jaccard Manual")
 
@@ -617,9 +608,9 @@ elif menu == "📏 Evaluasi Clustering Ensemble":
 
         st.success("✅ Evaluasi selesai!")
         st.markdown(f"""
-        - **Theta (θ)** = `{theta_final}`
-        - **Jumlah Cluster (k)** = `{k_final}`
-        - **Silhouette Score** = `{score:.4f}`
+        - *Theta (θ)* = {theta_final}
+        - *Jumlah Cluster (k)* = {k_final}
+        - *Silhouette Score* = {score:.4f}
         """)
 
         # Visualisasi tambahan (opsional)
@@ -629,7 +620,7 @@ elif menu == "📏 Evaluasi Clustering Ensemble":
         elif score > 0.5:
             st.info("🔸 Skor Silhouette cukup baik — cluster cukup terpisah.")
         elif score > 0.25:
-            st.warning("⚠️ Skor Silhouette sedang — mungkin ada tumpang tindih antar cluster.")
+            st.warning("⚠ Skor Silhouette sedang — mungkin ada tumpang tindih antar cluster.")
         else:
             st.error("🔻 Skor Silhouette rendah — hasil cluster kurang optimal.")
 
@@ -639,7 +630,7 @@ elif menu == "🧾 Interpretasi Hasil":
 
     df = st.session_state.df
     if df is None or 'cluster_ensemble_rock' not in df:
-        st.warning("⚠️ Pastikan hasil clustering ensemble sudah tersedia.")
+        st.warning("⚠ Pastikan hasil clustering ensemble sudah tersedia.")
     else:
         try:
             st.subheader("📊 Tabel Ringkasan per Cluster")
@@ -670,7 +661,7 @@ elif menu == "💾 Unduh Hasil Clustering Ensemble":
     df = st.session_state.df
 
     if df is None or 'cluster_ensemble_rock' not in df:
-        st.warning("⚠️ Data belum tersedia atau clustering ensemble belum dilakukan.")
+        st.warning("⚠ Data belum tersedia atau clustering ensemble belum dilakukan.")
     else:
         st.markdown("### 🔽 Tabel Hasil Clustering Ensemble")
         st.dataframe(df)
