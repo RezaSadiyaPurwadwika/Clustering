@@ -71,9 +71,9 @@ elif menu == "📂 Upload Data":
         except Exception as e:
             st.error(f"Terjadi kesalahan saat membaca file: {e}")
 
-# =============== PREPROCESSING ===============
-elif menu == "⚙ Data Preprocessing":
-    st.title("⚙ Tahap Preprocessing Data")
+# =============== ANALISIS DATA ===============
+elif menu == "📈 Analisis Data":
+    st.title("📈 Analisis Data UMKM")
     df = st.session_state.df
     if df is None:
         st.warning("⚠ Silakan unggah data terlebih dahulu.")
@@ -81,6 +81,7 @@ elif menu == "⚙ Data Preprocessing":
         try:
             df['jenis'] = df['jenis'].str.strip().str.lower()
             df['ojol'] = df['ojol'].str.strip().str.lower()
+
             st.subheader("1. Distribusi Kategori")
             col1, col2 = st.columns(2)
             with col1:
@@ -95,11 +96,23 @@ elif menu == "⚙ Data Preprocessing":
             st.subheader("2. Statistik Deskriptif")
             cols_num = ['omset', 'tenaga kerja', 'modal']
             st.dataframe(df[cols_num].describe())
+        except Exception as e:
+            st.error(f"Terjadi kesalahan saat analisis data: {e}")
 
-            st.subheader("3. Missing Values")
+# =============== PREPROCESSING ===============
+elif menu == "⚙ Data Preprocessing":
+    st.title("⚙ Tahap Preprocessing Data")
+    df = st.session_state.df
+    if df is None:
+        st.warning("⚠ Silakan unggah data terlebih dahulu.")
+    else:
+        try:
+            cols_num = ['omset', 'tenaga kerja', 'modal']
+
+            st.subheader("1. Missing Values")
             st.dataframe(df.isnull().sum())
 
-            st.subheader("4. Boxplot Sebelum Outlier Handling")
+            st.subheader("2. Boxplot Sebelum Outlier Handling")
             fig3, ax3 = plt.subplots()
             sns.boxplot(data=df[cols_num], ax=ax3)
             st.pyplot(fig3)
@@ -112,12 +125,12 @@ elif menu == "⚙ Data Preprocessing":
                 upper = Q3 + 1.5 * IQR
                 df[col] = df[col].clip(lower=lower, upper=upper)
 
-            st.subheader("5. Boxplot Setelah Outlier Handling")
+            st.subheader("3. Boxplot Setelah Outlier Handling")
             fig4, ax4 = plt.subplots()
             sns.boxplot(data=df[cols_num], ax=ax4)
             st.pyplot(fig4)
 
-            st.subheader("6. Normalisasi Data Z-Score")
+            st.subheader("4. Normalisasi Data Z-Score")
             df_zscore = df.copy()
             df_zscore[cols_num] = df_zscore[cols_num].apply(zscore)
             st.session_state.df_zscore = df_zscore
