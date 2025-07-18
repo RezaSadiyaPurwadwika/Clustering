@@ -107,17 +107,23 @@ elif menu == "⚙ Data Preprocessing":
         st.warning("⚠ Silakan unggah data terlebih dahulu.")
     else:
         try:
-            cols_num = ['omset', 'tenaga kerja', 'modal']
+            cols_num = ['omset', 'modal']
 
             st.subheader("1. Missing Values")
             st.dataframe(df.isnull().sum())
 
             st.subheader("2. Boxplot Sebelum Outlier Handling")
             fig3, ax3 = plt.subplots()
-            sns.boxplot(data=df[cols_num], ax=ax3)
+            sns.boxplot(data=df[['omset', 'modal']], ax=ax3)
             st.pyplot(fig3)
 
-            for col in cols_num:
+            # Tambahkan boxplot khusus tenaga kerja
+            st.markdown("**Boxplot Variabel Tenaga Kerja**")
+            fig_tk, ax_tk = plt.subplots()
+            sns.boxplot(y=df['tenaga kerja'], ax=ax_tk)
+            st.pyplot(fig_tk)
+
+            for col in ['omset', 'modal', 'tenaga kerja']:
                 Q1 = df[col].quantile(0.25)
                 Q3 = df[col].quantile(0.75)
                 IQR = Q3 - Q1
@@ -127,7 +133,7 @@ elif menu == "⚙ Data Preprocessing":
 
             st.subheader("3. Boxplot Setelah Outlier Handling")
             fig4, ax4 = plt.subplots()
-            sns.boxplot(data=df[cols_num], ax=ax4)
+            sns.boxplot(data=df[['omset', 'modal']], ax=ax4)
             st.pyplot(fig4)
 
             st.subheader("4. Normalisasi Data Z-Score")
