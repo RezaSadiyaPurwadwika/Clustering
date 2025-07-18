@@ -22,6 +22,7 @@ st.sidebar.title("Menu Navigasi")
 menu = st.sidebar.radio("Pilih halaman:", [
     "🏠 Home",
     "📂 Upload Data",
+    "📈 Analisis Data",
     "⚙️ Data Preprocessing",
     "📊 Clustering Numerik",
     "🧮 Clustering Kategorik",
