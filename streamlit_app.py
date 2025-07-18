@@ -58,23 +58,11 @@ if menu == "🏠 Home":
         - `jenis`: "mamin" / "oleh"
         """)
 
-# =============== UPLOAD ===============
-elif menu == "📂 Upload Data":
-    st.title("📂 Upload Dataset UMKM")
-    uploaded_file = st.file_uploader("Unggah file CSV", type="csv")
-    if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            st.session_state.df = df
-            st.success("✅ File berhasil diunggah!")
-            st.dataframe(df)
-        except Exception as e:
-            st.error(f"Terjadi kesalahan saat membaca file: {e}")
-
-# =============== PREPROCESSING ===============
-elif menu == "⚙️ Data Preprocessing":
-    st.title("⚙️ Tahap Preprocessing Data")
+# =============== ANALISIS DATA ===============
+elif menu == "📈 Analisis Data":
+    st.title("📈 Analisis Data Awal")
     df = st.session_state.df
+
     if df is None:
         st.warning("⚠️ Silakan unggah data terlebih dahulu.")
     else:
@@ -96,6 +84,27 @@ elif menu == "⚙️ Data Preprocessing":
             cols_num = ['omset', 'tenaga kerja', 'modal']
             st.dataframe(df[cols_num].describe())
 
+# =============== UPLOAD ===============
+elif menu == "📂 Upload Data":
+    st.title("📂 Upload Dataset UMKM")
+    uploaded_file = st.file_uploader("Unggah file CSV", type="csv")
+    if uploaded_file:
+        try:
+            df = pd.read_csv(uploaded_file)
+            st.session_state.df = df
+            st.success("✅ File berhasil diunggah!")
+            st.dataframe(df)
+        except Exception as e:
+            st.error(f"Terjadi kesalahan saat membaca file: {e}")
+
+# =============== PREPROCESSING ===============
+elif menu == "⚙️ Data Preprocessing":
+    st.title("⚙️ Tahap Preprocessing Data")
+    df = st.session_state.df
+    if df is None:
+        st.warning("⚠️ Silakan unggah data terlebih dahulu.")
+    else:
+        try:
             st.subheader("3. Missing Values")
             st.dataframe(df.isnull().sum())
 
