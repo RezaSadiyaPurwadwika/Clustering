@@ -513,7 +513,7 @@ elif menu == "🤝 Clustering Ensemble":
             return total_sim / total_pairs if total_pairs != 0 else 0
 
         # --- EVALUASI BEBERAPA KOMBINASI THETA DAN K ---
-        theta_values = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]  # Bisa diperluas lagi jika sudah stabil
+        theta_values = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]  # Bisa diperluas lagi jika sudah stabil
         cluster_range = [2, 3, 4, 5, 6, 7, 8, 9, 10]
         ensemble_cp_results = []
 
