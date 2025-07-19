@@ -371,8 +371,23 @@ elif menu == "🧮 Clustering Kategorik":
         # Tambahkan kontrol input setelah menampilkan tabel CP*
         st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
 
-        theta_selected = st.selectbox("Pilih nilai theta (θ):", options=sorted(cp_summary['theta'].unique()))
-        k_selected = st.selectbox("Pilih jumlah cluster (k):", options=sorted(cp_summary['k'].unique()))
+        # Simpan default jika belum ada di session_state
+        if 'theta_selected' not in st.session_state:
+            st.session_state.theta_selected = sorted(cp_summary['theta'].unique())[0]
+        if 'k_selected' not in st.session_state:
+            st.session_state.k_selected = sorted(cp_summary['k'].unique())[0]
+
+        # Gunakan nilai dari session_state
+        theta_selected = st.selectbox("Pilih nilai theta (θ):", 
+                                      options=sorted(cp_summary['theta'].unique()), 
+                                      index=sorted(cp_summary['theta'].unique()).index(st.session_state.theta_selected))
+        k_selected = st.selectbox("Pilih jumlah cluster (k):", 
+                                  options=sorted(cp_summary['k'].unique()), 
+                                  index=sorted(cp_summary['k'].unique()).index(st.session_state.k_selected))
+
+        # Simpan kembali ke session_state jika berubah
+        st.session_state.theta_selected = theta_selected
+        st.session_state.k_selected = k_selected
 
         # Jalankan clustering berdasarkan parameter yang dipilih
         st.markdown(f"### 🔍 Menjalankan ROCK Clustering dengan θ = {theta_selected}, k = {k_selected}")
