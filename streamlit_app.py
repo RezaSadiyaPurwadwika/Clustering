@@ -545,49 +545,58 @@ elif menu == "🤝 Clustering Ensemble":
         st.subheader("📊 Rangkuman Evaluasi CP* Total (Clustering Ensemble)")
         st.dataframe(cp_ensemble_summary.sort_values(by=['theta', 'k']))
 
-        # --- CLUSTERING TERBAIK SECARA MANUAL / OTOMATIS ---
-        theta_final = 0.40
-        k_final = 7
+        # --- PILIHAN PARAMETER FINAL SECARA INTERAKTIF ---
+        st.markdown("### ⚙️ Pilih Parameter Clustering Ensemble")
+        # Buat pilihan unik dari hasil evaluasi
+        available_combinations = cp_ensemble_summary.sort_values(by='cp_star_total', ascending=False)
 
-        st.markdown(f"### 🚀 Final Clustering: Theta = *{theta_final}, K = **{k_final}*")
-        with st.spinner("🔄 Menjalankan final clustering ensemble..."):
-            labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
-            df['cluster_ensemble_rock'] = labels_final
-            st.session_state.df = df
+        # Dropdown untuk memilih theta dan k
+        theta_options = sorted(cp_ensemble_summary['theta'].unique())
+        k_options = sorted(cp_ensemble_summary['k'].unique())
 
-        st.success("✅ Clustering Ensemble selesai!")
+        theta_final = st.selectbox("Pilih nilai Theta:", theta_options, index=theta_options.index(0.4))
+        k_final = st.selectbox("Pilih jumlah cluster (k):", k_options, index=k_options.index(7))
 
-        st.subheader("📋 Hasil Clustering Ensemble")
-        st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
+        # Tombol untuk menjalankan clustering final
+        if st.button("🚀 Jalankan Clustering Ensemble Final"):
+            with st.spinner("🔄 Menjalankan final clustering ensemble..."):
+                labels_final, encoded_final = rock_clustering(df_ensemble, theta_final, k_final)
+                df['cluster_ensemble_rock'] = labels_final
+                st.session_state.df = df
+                st.success("✅ Clustering Ensemble selesai!")
 
-        # --- PLOT DISTRIBUSI CLUSTER ---
-        cluster_counts = df['cluster_ensemble_rock'].value_counts().sort_index()
-        st.subheader("📈 Distribusi Jumlah Data per Cluster")
-        fig_bar, ax_bar = plt.subplots()
-        ax_bar.bar(cluster_counts.index.astype(str), cluster_counts.values, color='mediumseagreen')
-        ax_bar.set_xlabel("Cluster")
-        ax_bar.set_ylabel("Jumlah Data")
-        ax_bar.set_title("Distribusi Cluster (Ensemble)")
-        st.pyplot(fig_bar)
+            # Tampilkan hasil
+            st.subheader("📋 Hasil Clustering Ensemble")
+            st.dataframe(df[['cluster_numerik', 'cluster_kategorik', 'cluster_ensemble_rock']])
 
-        # --- VISUALISASI T-SNE ---
-        st.subheader("🌀 Visualisasi t-SNE Clustering Ensemble")
-        with st.spinner("⏳ Memproyeksikan data ke 2D dengan t-SNE..."):
-            sim_matrix = jaccard_similarity_matrix(encoded_final)
-            dist_matrix = 1 - sim_matrix
-            tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
-            X_tsne = tsne.fit_transform(dist_matrix)
+            # --- Plot Distribusi Cluster ---
+            cluster_counts = df['cluster_ensemble_rock'].value_counts().sort_index()
+            st.subheader("📈 Distribusi Jumlah Data per Cluster")
+            fig_bar, ax_bar = plt.subplots()
+            ax_bar.bar(cluster_counts.index.astype(str), cluster_counts.values, color='mediumseagreen')
+            ax_bar.set_xlabel("Cluster")
+            ax_bar.set_ylabel("Jumlah Data")
+            ax_bar.set_title("Distribusi Cluster (Ensemble)")
+            st.pyplot(fig_bar)
 
-        fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
-        for cl in np.unique(labels_final):
-            idx = np.array(labels_final) == cl
-            ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}', s=60)
-        ax_tsne.set_title(f"t-SNE Clustering Ensemble\nTheta = {theta_final}, k = {k_final}")
-        ax_tsne.set_xlabel("t-SNE Komponen 1")
-        ax_tsne.set_ylabel("t-SNE Komponen 2")
-        ax_tsne.legend()
-        ax_tsne.grid(True)
-        st.pyplot(fig_tsne)
+            # --- Visualisasi t-SNE ---
+            st.subheader("🌀 Visualisasi t-SNE Clustering Ensemble")
+            with st.spinner("⏳ Memproyeksikan data ke 2D dengan t-SNE..."):
+                sim_matrix = jaccard_similarity_matrix(encoded_final)
+                dist_matrix = 1 - sim_matrix
+                tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+                X_tsne = tsne.fit_transform(dist_matrix)
+
+            fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
+            for cl in np.unique(labels_final):
+                idx = np.array(labels_final) == cl
+                ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}', s=60)
+            ax_tsne.set_title(f"t-SNE Clustering Ensemble\nTheta = {theta_final}, k = {k_final}")
+            ax_tsne.set_xlabel("t-SNE Komponen 1")
+            ax_tsne.set_ylabel("t-SNE Komponen 2")
+            ax_tsne.legend()
+            ax_tsne.grid(True)
+            st.pyplot(fig_tsne)
 
 # =============== EVALUASI CLUSTERING ENSEMBLE ===============
 elif menu == "📏 Evaluasi Clustering Ensemble":
