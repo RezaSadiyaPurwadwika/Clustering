@@ -373,17 +373,15 @@ elif menu == "🧮 Clustering Kategorik":
         theta_options = sorted(cp_summary['theta'].unique())
         k_options = sorted(cp_summary['k'].unique())
 
-        # Tetapkan nilai default dari session_state atau pakai default manual
         theta_selected = st.selectbox("Pilih nilai theta (θ):", theta_options,
                                       index=theta_options.index(st.session_state.get('theta_selected', 0.3)))
         k_selected = st.selectbox("Pilih jumlah cluster (k):", k_options,
                                       index=k_options.index(st.session_state.get('k_selected', 3)))
 
-        # Simpan ke session_state
         st.session_state.theta_selected = theta_selected
         st.session_state.k_selected = k_selected
 
-        # Tombol eksekusi clustering
+        # Jalankan clustering HANYA saat tombol diklik
         if st.button("🚀 Jalankan ROCK Clustering Kategorik"):
             with st.spinner(f"🔄 Menjalankan ROCK Clustering dengan θ = {theta_selected}, k = {k_selected}"):
                 labels_best, encoded = rock_clustering(data, theta=theta_selected, target_cluster_count=k_selected)
@@ -391,9 +389,9 @@ elif menu == "🧮 Clustering Kategorik":
                 st.session_state.df = df
                 st.success(f"✅ Clustering selesai untuk θ = {theta_selected}, k = {k_selected}")
 
-        # Visualisasi t-SNE
-        encoded = data.apply(LabelEncoder().fit_transform)
-        sim_matrix = jaccard_similarity_matrix(encoded)
+        # t-SNE visualisasi
+        encoded_tsne = data.apply(LabelEncoder().fit_transform)
+        sim_matrix = jaccard_similarity_matrix(encoded_tsne)
         dist_matrix = 1 - sim_matrix
         tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
         X_tsne = tsne.fit_transform(dist_matrix)
@@ -410,9 +408,11 @@ elif menu == "🧮 Clustering Kategorik":
         ax_tsne.grid(True)
         st.pyplot(fig_tsne)
 
+        # Tabel hasil
         st.subheader("📋 Hasil Clustering")
         st.dataframe(df[['ojol', 'jenis', 'cluster_kategorik']])
 
+        # Bar chart distribusi cluster
         st.subheader("📈 Distribusi Cluster")
         cluster_counts = df['cluster_kategorik'].value_counts().sort_index()
         fig, ax = plt.subplots()
