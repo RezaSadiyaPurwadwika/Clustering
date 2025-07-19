@@ -79,7 +79,7 @@ elif menu == "⚙ Data Preprocessing":
         st.warning("⚠ Silakan unggah data terlebih dahulu.")
     else:
         try:
-            cols_num = ['omset', 'modal']
+            cols_num = ['omset', 'modal', tenaga kerja']
 
             st.subheader("1. Missing Values")
             st.dataframe(df.isnull().sum())
