@@ -368,14 +368,19 @@ elif menu == "🧮 Clustering Kategorik":
         st.subheader("📊 Rangkuman Evaluasi CP* Total")
         st.dataframe(cp_summary.sort_values(by=['theta', 'k']))
 
-        # Clustering dengan konfigurasi terbaik
-        theta_final = 0.40
-        k_final = 4
-        labels, encoded = rock_clustering(data, theta_final, k_final)
-        df['cluster_kategorik'] = labels
+        # Tambahkan kontrol input setelah menampilkan tabel CP*
+        st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
+
+        theta_selected = st.selectbox("Pilih nilai theta (θ):", options=sorted(cp_summary['theta'].unique()))
+        k_selected = st.selectbox("Pilih jumlah cluster (k):", options=sorted(cp_summary['k'].unique()))
+
+        # Jalankan clustering berdasarkan parameter yang dipilih
+        st.markdown(f"### 🔍 Menjalankan ROCK Clustering dengan θ = {theta_selected}, k = {k_selected}")
+        labels_best, encoded = rock_clustering(data, theta=theta_selected, target_cluster_count=k_selected)
+        df['cluster_kategorik'] = labels_best
         st.session_state.df = df
 
-        st.success(f"✅ Clustering ROCK selesai! Theta = {theta_final}, k = {k_final}")
+        st.success(f"✅ Clustering selesai untuk θ = {theta_selected}, k = {k_selected}")
 
                 # Visualisasi t-SNE
         st.subheader("🌀 Visualisasi t-SNE Clustering Kategorik")
@@ -393,11 +398,12 @@ elif menu == "🧮 Clustering Kategorik":
         X_tsne = tsne.fit_transform(dist_matrix)
 
         # Plot t-SNE
+        st.subheader("🌀 Visualisasi t-SNE Clustering Kategorik")
         fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
         for cl in np.unique(labels_best):
             idx = np.array(labels_best) == cl
             ax_tsne.scatter(X_tsne[idx, 0], X_tsne[idx, 1], label=f'Cluster {cl}')
-        ax_tsne.set_title("Visualisasi ROCK Clustering\nTheta = 0.40, k = 4")
+        ax_tsne.set_title(f"Visualisasi ROCK Clustering\nTheta = {theta_selected}, k = {k_selected}")
         ax_tsne.set_xlabel("t-SNE 1")
         ax_tsne.set_ylabel("t-SNE 2")
         ax_tsne.legend()
@@ -407,8 +413,8 @@ elif menu == "🧮 Clustering Kategorik":
         st.subheader("📋 Hasil Clustering")
         st.dataframe(df[['ojol', 'jenis', 'cluster_kategorik']])
 
-        cluster_counts = df['cluster_kategorik'].value_counts().sort_index()
         st.subheader("📈 Distribusi Cluster")
+        cluster_counts = df['cluster_kategorik'].value_counts().sort_index()
         fig, ax = plt.subplots()
         sns.barplot(x=cluster_counts.index, y=cluster_counts.values, ax=ax, palette='viridis')
         ax.set_title("Distribusi Jumlah Data per Cluster")
