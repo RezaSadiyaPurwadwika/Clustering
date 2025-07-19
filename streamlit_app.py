@@ -368,45 +368,36 @@ elif menu == "🧮 Clustering Kategorik":
         st.subheader("📊 Rangkuman Evaluasi CP* Total")
         st.dataframe(cp_summary.sort_values(by=['theta', 'k']))
 
-        # Tambahkan kontrol input setelah menampilkan tabel CP*
         st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
 
-        # Simpan default jika belum ada di session_state
-        if 'theta_selected' not in st.session_state:
-            st.session_state.theta_selected = sorted(cp_summary['theta'].unique())[0]
-        if 'k_selected' not in st.session_state:
-            st.session_state.k_selected = sorted(cp_summary['k'].unique())[0]
+        theta_options = sorted(cp_summary['theta'].unique())
+        k_options = sorted(cp_summary['k'].unique())
 
-        # Gunakan nilai dari session_state
-        theta_selected = st.selectbox("Pilih nilai theta (θ):", 
-                                      options=sorted(cp_summary['theta'].unique()), 
-                                      index=sorted(cp_summary['theta'].unique()).index(st.session_state.theta_selected))
-        k_selected = st.selectbox("Pilih jumlah cluster (k):", 
-                                  options=sorted(cp_summary['k'].unique()), 
-                                  index=sorted(cp_summary['k'].unique()).index(st.session_state.k_selected))
+        # Tetapkan nilai default dari session_state atau pakai default manual
+        theta_selected = st.selectbox("Pilih nilai theta (θ):", theta_options,
+                                      index=theta_options.index(st.session_state.get('theta_selected', 0.3)))
+        k_selected = st.selectbox("Pilih jumlah cluster (k):", k_options,
+                                      index=k_options.index(st.session_state.get('k_selected', 3)))
 
-        # Simpan kembali ke session_state jika berubah
+        # Simpan ke session_state
         st.session_state.theta_selected = theta_selected
         st.session_state.k_selected = k_selected
 
-        # Jalankan clustering berdasarkan parameter yang dipilih
-        st.markdown(f"### 🔍 Menjalankan ROCK Clustering dengan θ = {theta_selected}, k = {k_selected}")
-        labels_best, encoded = rock_clustering(data, theta=theta_selected, target_cluster_count=k_selected)
-        df['cluster_kategorik'] = labels_best
-        st.session_state.df = df
+        # Tombol eksekusi clustering
+        if st.button("🚀 Jalankan ROCK Clustering Kategorik"):
+            with st.spinner(f"🔄 Menjalankan ROCK Clustering dengan θ = {theta_selected}, k = {k_selected}"):
+                labels_best, encoded = rock_clustering(data, theta=theta_selected, target_cluster_count=k_selected)
+                df['cluster_kategorik'] = labels_best
+                st.session_state.df = df
+                st.success(f"✅ Clustering selesai untuk θ = {theta_selected}, k = {k_selected}")
 
-        st.success(f"✅ Clustering selesai untuk θ = {theta_selected}, k = {k_selected}")
-
-        # Encode ulang untuk t-SNE
+        # Visualisasi t-SNE
         encoded = data.apply(LabelEncoder().fit_transform)
         sim_matrix = jaccard_similarity_matrix(encoded)
         dist_matrix = 1 - sim_matrix
-
-        # t-SNE reduction
         tsne = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
         X_tsne = tsne.fit_transform(dist_matrix)
 
-        # Plot t-SNE
         st.subheader("🌀 Visualisasi t-SNE Clustering Kategorik")
         fig_tsne, ax_tsne = plt.subplots(figsize=(8, 6))
         for cl in np.unique(labels_best):
