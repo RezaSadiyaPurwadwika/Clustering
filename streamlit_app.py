@@ -382,12 +382,6 @@ elif menu == "🧮 Clustering Kategorik":
 
         st.success(f"✅ Clustering selesai untuk θ = {theta_selected}, k = {k_selected}")
 
-                # Visualisasi t-SNE
-        st.subheader("🌀 Visualisasi t-SNE Clustering Kategorik")
-
-        labels_best = rock_clustering(data, theta=0.40, target_cluster_count=4)[0]
-        df['cluster_kategorik'] = labels_best
-
         # Encode ulang untuk t-SNE
         encoded = data.apply(LabelEncoder().fit_transform)
         sim_matrix = jaccard_similarity_matrix(encoded)
