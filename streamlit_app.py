@@ -55,7 +55,7 @@ if menu == "🏠 Home":
         Untuk memastikan data dapat diproses dengan baik, file yang diunggah **wajib** memenuhi ketentuan berikut:
 
         **📄 Format CSV wajib memuat kolom:**
-        - `modal`, `omset`, `tenaga_kerja` : angka bulat tanpa titik (contoh: 7000000 untuk 7 juta)
+        - `modal` dan `omset` : angka bulat tanpa titik (contoh: 7000000 untuk 7 juta)
         - `tenaga kerja` : angka bulat 
         - `ojol` : hanya diisi dengan `"ya"` atau `"tidak"`
         - `jenis` : hanya diisi dengan `"mamin"` atau `"oleh"`
