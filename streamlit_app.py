@@ -45,9 +45,10 @@ if menu == "🏠 Home":
     with tab1:
         st.markdown("""
         ### Tentang Aplikasi
-        Aplikasi ini dirancang untuk mengelompokkan data UMKM di Kabupaten Malang menggunakan:
-        - Agglomerative Hierarchical Clustering (AHC)
-        - Robust Clustering using Links (Ensemble ROCK)
+        Aplikasi ini dirancang untuk mengelompokkan data UMKM menggunakan:
+        - Agglomerative Hierarchical Clustering (AHC) untuk klasterisasi data numerik
+        - Robust Clustering using Links (ROCK) untuk klasterisasi data kategorik
+        - Ensemble ROCK untuk klasterisasi final data campuran
         """)
     with tab2:
     ### Aturan Penggunaan
