@@ -378,6 +378,16 @@ elif menu == "🧮 Clustering Kategorik":
 
         st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
 
+        st.markdown("""
+        Silakan eksplorasi kombinasi parameter *theta* dan jumlah klaster (*k*) untuk melihat hasil visualisasi clustering.
+
+        - Nilai **compactness (CP\\*)** yang **mendekati 1** umumnya menunjukkan hasil klaster yang **semakin baik** karena tiap anggota klaster semakin mirip satu sama lain.
+        - Secara umum, nilai **theta yang lebih kecil** cenderung menghasilkan klaster yang lebih rapat dan seragam.
+        - Untuk jumlah klaster, tidak ada angka pasti — sesuaikan saja dengan **tujuan analisis** dan lihat **hasil visualisasi** untuk membantu menilai segmentasi yang paling masuk akal.
+
+        Cobalah berbagai kombinasi untuk memahami struktur data UMKM secara lebih mendalam.
+        """)
+
         theta_options = sorted(cp_summary['theta'].unique())
         k_options = sorted(cp_summary['k'].unique())
 
@@ -546,6 +556,19 @@ elif menu == "🤝 Clustering Ensemble":
 
         # --- PILIHAN PARAMETER FINAL SECARA INTERAKTIF ---
         st.markdown("### ⚙️ Pilih Parameter Clustering Ensemble")
+
+        st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
+
+        st.markdown("""
+        Silakan eksplorasi kombinasi parameter *theta* dan jumlah klaster (*k*) untuk melihat hasil visualisasi clustering.
+
+        - Nilai **compactness (CP\\*)** yang **mendekati 1** umumnya menunjukkan hasil klaster yang **semakin baik** karena tiap anggota klaster semakin mirip satu sama lain.
+        - Secara umum, nilai **theta yang lebih kecil** cenderung menghasilkan klaster yang lebih rapat dan seragam.
+        - Untuk jumlah klaster, tidak ada angka pasti — sesuaikan saja dengan **tujuan analisis** dan lihat **hasil visualisasi** untuk membantu menilai segmentasi yang paling masuk akal.
+
+        Cobalah berbagai kombinasi untuk memahami struktur data UMKM secara lebih mendalam.
+        """)
+
         # Buat pilihan unik dari hasil evaluasi
         available_combinations = cp_ensemble_summary.sort_values(by='cp_star_total', ascending=False)
 
