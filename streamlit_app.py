@@ -50,12 +50,19 @@ if menu == "🏠 Home":
         - Robust Clustering using Links (Ensemble ROCK)
         """)
     with tab2:
+    ### Aturan Penggunaan
         st.markdown("""
-        ### Aturan Penggunaan
-        *Format CSV wajib memuat kolom:*
-        - modal, omset, tenaga_kerja: angka bulat
-        - ojol: "ya" / "tidak"
-        - jenis: "mamin" / "oleh"
+        Untuk memastikan data dapat diproses dengan baik, file yang diunggah **wajib** memenuhi ketentuan berikut:
+
+        **📄 Format CSV wajib memuat kolom:**
+        - `modal`, `omset`, `tenaga_kerja` : angka bulat tanpa titik (contoh: 7000000 untuk 7 juta)
+        - `tenaga kerja` : angka bulat 
+        - `ojol` : hanya diisi dengan `"ya"` atau `"tidak"`
+        - `jenis` : hanya diisi dengan `"mamin"` atau `"oleh"`
+
+        **⚠️ Ketentuan tambahan:**
+        - File **tidak boleh mengandung nilai kosong** (missing value)
+        - Nama kolom harus **persis sesuai** (huruf kecil)
         """)
 
 # =============== UPLOAD ===============
