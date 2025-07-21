@@ -555,8 +555,6 @@ elif menu == "🤝 Clustering Ensemble":
         st.dataframe(cp_ensemble_summary.sort_values(by=['theta', 'k']))
 
         # --- PILIHAN PARAMETER FINAL SECARA INTERAKTIF ---
-        st.markdown("### ⚙️ Pilih Parameter Clustering Ensemble")
-
         st.subheader("⚙️ Pilih Parameter Theta dan Jumlah Cluster untuk Visualisasi")
 
         st.markdown("""
