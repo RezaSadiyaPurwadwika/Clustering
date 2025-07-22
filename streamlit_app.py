@@ -110,7 +110,7 @@ elif menu == "⚙ Data Preprocessing":
             sns.boxplot(data=df[cols_num], ax=ax4)
             st.pyplot(fig4)
 
-            st.subheader("4. Normalisasi Data Z-Score")
+            st.subheader("4. Standarisasi Data Z-Score")
             df_zscore = df.copy()
             df_zscore[cols_num] = df_zscore[cols_num].apply(zscore)
             st.session_state.df_zscore = df_zscore
